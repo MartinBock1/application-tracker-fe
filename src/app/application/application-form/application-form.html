@@ -1,0 +1,113 @@
+<!-- Wir verwenden die gleichen Container-Klassen wie bei Login/Register -->
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>
+      {{ isEditMode ? "Bewerbung bearbeiten" : "Neue Bewerbung erstellen" }}
+    </h2>
+    <p
+      class="subtitle"
+      *ngIf="isEditMode && currentApplication && currentApplication.company"
+    >
+      {{ currentApplication.job_title }} bei
+      {{ currentApplication.company.name }}
+    </p>
+
+    <p class="subtitle" *ngIf="!isEditMode">
+      Fülle die Details deiner Bewerbung aus.
+    </p>
+
+    <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
+      <!-- Form Group für den Jobtitel -->
+      <div class="form-group">
+        <label for="job_title">Jobtitel</label>
+        <input
+          id="job_title"
+          type="text"
+          formControlName="job_title"
+          placeholder="z.B. Senior Frontend Developer"
+        />
+      </div>
+
+      <!-- Form Group für das Unternehmen (Dropdown) -->
+      <div class="form-group">
+        <label for="company_id">Unternehmen</label>
+        <select id="company_id" formControlName="company_id">
+          <option [ngValue]="null" disabled>Bitte Unternehmen auswählen</option>
+          <option *ngFor="let company of companies" [ngValue]="company.id">
+            {{ company.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Form Group für den Status (Dropdown) -->
+      <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status" formControlName="status">
+          <option value="DRAFT">Entwurf</option>
+          <option value="APPLIED">Beworben</option>
+          <option value="INTERVIEW">Interview</option>
+          <option value="OFFER">Angebot erhalten</option>
+          <option value="REJECTED">Abgelehnt</option>
+          <option value="WITHDRAWN">Zurückgezogen</option>
+        </select>
+      </div>
+
+      <!-- Füge hier bei Bedarf weitere Felder hinzu, z.B. für das Bewerbungsdatum -->
+      <!--       
+      <div class="form-group">
+        <label for="applied_on">Beworben am</label>
+        <input id="applied_on" type="date" formControlName="applied_on">
+      </div>
+      -->
+
+      <!-- ========================================== -->
+      <!-- NEUER ABSCHNITT: Notizen (nur im Edit-Modus) -->
+      <!-- ========================================== -->
+      <div *ngIf="isEditMode && currentApplication" class="notes-section">
+        <hr />
+        <h3>Notizen</h3>
+
+        <!-- Formular zum Hinzufügen einer neuen Notiz -->
+        <div class="add-note-form">
+          <textarea
+            [formControl]="newNoteControl"
+            placeholder="Neue Notiz hinzufügen..."
+          ></textarea>
+          <button
+            class="btn-add-note"
+            (click)="onAddNote()"
+            [disabled]="newNoteControl.invalid"
+          >
+            Hinzufügen
+          </button>
+        </div>
+
+        <!-- Liste der bestehenden Notizen -->
+        <div class="notes-list">
+          <div *ngIf="currentApplication.notes.length === 0" class="no-notes">
+            Noch keine Notizen vorhanden.
+          </div>
+
+          <div *ngFor="let note of currentApplication.notes" class="note-item">
+            <p class="note-text">{{ note.text }}</p>
+            <span class="note-date"
+              >{{ note.created_at | date : "dd.MM.yyyy, HH:mm" }} Uhr</span
+            >
+          </div>
+        </div>
+      </div>
+      <br />
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="applicationForm.invalid"
+      >
+        {{ isEditMode ? "Änderungen speichern" : "Bewerbung erstellen" }}
+      </button>
+    </form>
+
+    <div class="switch-auth-link">
+      <a routerLink="/applications">Zurück zur Übersicht</a>
+    </div>
+  </div>
+</div>

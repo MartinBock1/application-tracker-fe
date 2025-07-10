@@ -1,0 +1,131 @@
+// Container und Header
+.list-container {
+  padding: 20px 40px;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 20px;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+// Lade- und Fehlerzustände
+.loading-indicator, .empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.spinner {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-message {
+  // Nimmt den Stil aus der Auth-Komponente, falls dort global definiert,
+  // ansonsten hier definieren:
+  color: #d9534f;
+  background-color: #f2dede;
+  border: 1px solid #ebccd1;
+  border-radius: 4px;
+  padding: 15px;
+  text-align: center;
+}
+
+
+// Das Grid für die Bewerbungskarten
+.application-grid {
+  display: grid;
+  // Erstellt ein responsives Grid: 
+  // Spalten sind min. 320px breit, füllen aber den verfügbaren Platz.
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+// Styling für die einzelne Karte
+.application-card {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+  }
+
+  .company-name {
+    color: #555;
+    font-weight: 500;
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
+
+  .details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    color: #777;
+  }
+
+  .details-link {
+    margin-top: auto; // Schiebt den Link nach unten
+    background-color: #f0f0f0;
+    color: #333;
+    text-align: center;
+    padding: 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
+}
+
+// Styling für die Status-Badges
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: white;
+
+  &.status-DRAFT { background-color: #6c757d; } // Grau
+  &.status-APPLIED { background-color: #007bff; } // Blau
+  &.status-INTERVIEW { background-color: #ffc107; color: #333; } // Gelb
+  &.status-OFFER { background-color: #28a745; } // Grün
+  &.status-REJECTED { background-color: #dc3545; } // Rot
+  &.status-WITHDRAWN { background-color: #343a40; } // Dunkelgrau
+}

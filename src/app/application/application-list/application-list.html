@@ -1,0 +1,47 @@
+<div class="list-container">
+  <header class="list-header">
+    <h2>Meine Bewerbungen</h2>
+    <!-- <a routerLink="/applications/new" class="btn btn-primary">Neue Bewerbung erstellen</a> -->
+  </header>
+
+  <!-- Lade-Spinner anzeigen, während die Daten geholt werden -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    <div class="spinner"></div>
+    <p>Lade Bewerbungen...</p>
+  </div>
+
+  <!-- Fehlermeldung anzeigen, falls ein Fehler auftritt -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Hauptinhalt nur anzeigen, wenn nicht geladen wird und kein Fehler vorliegt -->
+  <div *ngIf="!isLoading && !errorMessage">
+    
+    <!-- Fall 1: Es gibt Bewerbungen -> Zeige das Gitter an -->
+    <div *ngIf="applications.length > 0; else noApplications" class="application-grid">
+      <div *ngFor="let app of applications" class="application-card">
+        <h3>{{ app.job_title }}</h3>
+        <p class="company-name">{{ app.company.name }}</p>
+        <div class="details">
+          <span>Beworben am: {{ app.applied_on | date:'dd.MM.yyyy' }}</span>
+          <span class="status-badge" [ngClass]="'status-' + app.status">
+            {{ app.status_display }}
+          </span>
+        </div>
+        <p>Notizen:</p>
+        <p>{{ app.notes }}</p>
+        <a class="details-link" [routerLink]="['/applications/edit', app.id]">bearbeiten</a>
+      </div>
+    </div>
+
+    <!-- Fall 2: Keine Bewerbungen vorhanden -> Zeige eine "Leer"-Nachricht an -->
+    <ng-template #noApplications>
+      <div class="empty-state">
+        <h3>Noch keine Bewerbungen erfasst.</h3>
+        <p>Klicke auf "Neue Bewerbung", um deine erste Bewerbung hinzuzufügen.</p>
+      </div>
+    </ng-template>
+
+  </div>
+</div>

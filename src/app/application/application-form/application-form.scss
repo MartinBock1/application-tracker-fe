@@ -1,0 +1,126 @@
+// Importiere die geteilten Stile aus der Login-Komponente.
+// Wir verwenden @use, um modern und zukunftssicher zu bleiben.
+@use '../../auth/auth-forms' as *;
+
+// Spezifische Anpassungen nur für diese Komponente können hier folgen.
+// Wir müssen die `select`-Elemente (Dropdowns) so stylen,
+// dass sie wie die `input`-Felder aussehen.
+.form-group {
+  select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+    
+    // Wichtig für das Aussehen auf verschiedenen Betriebssystemen
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    
+    // Fügt einen benutzerdefinierten Pfeil hinzu, da wir den Standard-Pfeil entfernt haben
+    background-image: url('../../../../public/icons/arrow-down.svg');
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px 12px;
+
+    &:focus {
+      outline: none;
+      border-color: var(--input-focus-border-color);
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+  }
+}
+
+.notes-section {
+  margin-top: 30px;
+
+  hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 30px 0;
+  }
+
+  h3 {
+    margin-bottom: 20px;
+  }
+}
+
+.add-note-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+
+  textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 15px;
+    border: 1px solid var(--input-border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit; // Schriftart vom body übernehmen
+    resize: vertical; // Erlaubt nur vertikales Ändern der Größe
+
+    &:focus {
+      outline: none;
+      border-color: var(--input-focus-border-color);
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+  }
+  
+  .btn-add-note {
+    align-self: flex-end; // Button nach rechts schieben
+    padding: 8px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+
+    &:hover:not(:disabled) {
+      background-color: var(--primary-color-hover);
+    }
+    
+    &:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  .no-notes {
+    color: #888;
+    padding: 20px;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+  }
+}
+
+.note-item {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-left: 4px solid var(--primary-color);
+  border-radius: 4px;
+  padding: 15px;
+
+  .note-text {
+    margin: 0 0 10px 0;
+    white-space: pre-wrap; // Erhält Zeilenumbrüche in der Notiz
+  }
+
+  .note-date {
+    display: block;
+    text-align: right;
+    font-size: 0.8rem;
+    color: #888;
+  }
+}
