@@ -1,0 +1,40 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Konto erstellen</h2>
+    <p class="subtitle">Schön, dass du dabei bist!</p>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="username">Benutzername</label>
+        <input id="username" type="text" formControlName="username" placeholder="Dein Benutzername">
+      </div>
+
+      <div class="form-group">
+        <label for="email">E-Mail</label>
+        <input id="email" type="email" formControlName="email" placeholder="deine.email@beispiel.com">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Passwort</label>
+        <input id="password" type="password" formControlName="password" placeholder="Mindestens 6 Zeichen">
+      </div>
+      
+      <div class="form-group">
+        <label for="repeated_password">Passwort wiederholen</label>
+        <input id="repeated_password" type="password" formControlName="repeated_password" placeholder="Passwort bestätigen">
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="registerForm.invalid">
+        Registrieren
+      </button>
+
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+    </form>
+
+    <div class="switch-auth-link">
+      Bereits ein Konto? <a routerLink="/login">Hier einloggen</a>
+    </div>
+  </div>
+</div>
