@@ -1,0 +1,14 @@
+@use '../../app/auth/auth-forms' as *;
+
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  min-height: 90vh; // Zentriert die Karte vertikal
+  padding: 20px;
+}
+
+.auth-card{
+    max-width: 600px;
+}

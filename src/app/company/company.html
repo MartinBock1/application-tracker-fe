@@ -1,0 +1,138 @@
+<div class="form-container">
+  <!-- <div class="auth-card"> -->
+    <h2>Neue Firma und Kontakt anlegen</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="auth-card">
+      <!-- Sektion für die Firma -->
+      <fieldset formGroupName="company">
+        <legend>Firmendaten</legend>
+
+        <div class="form-group">
+          <label for="company-name">Firmenname</label>
+          <input
+            id="company-name"
+            type="text"
+            formControlName="name"
+            placeholder="z.B. Tech Solutions GmbH"
+          />
+          <div
+            *ngIf="
+              form.get('company.name')?.invalid &&
+              form.get('company.name')?.touched
+            "
+            class="error"
+          >
+            Firmenname ist ein Pflichtfeld.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="company-industry">Branche</label>
+          <input
+            id="company-industry"
+            type="text"
+            formControlName="industry"
+            placeholder="z.B. Informationstechnologie"
+          />
+          <div
+            *ngIf="
+              form.get('company.industry')?.invalid &&
+              form.get('company.industry')?.touched
+            "
+            class="error"
+          >
+            Branche ist ein Pflichtfeld.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="company-website">Webseite</label>
+          <input
+            id="company-website"
+            type="url"
+            formControlName="website"
+            placeholder="https://tech-solutions.de"
+          />
+        </div>
+      </fieldset>
+
+      <!-- Sektion für die Kontaktperson -->
+      <fieldset formGroupName="contact">
+        <legend>Kontaktperson</legend>
+
+        <div class="form-group">
+          <label for="contact-firstname">Vorname</label>
+          <input
+            id="contact-firstname"
+            type="text"
+            formControlName="first_name"
+          />
+          <div
+            *ngIf="
+              form.get('contact.first_name')?.invalid &&
+              form.get('contact.first_name')?.touched
+            "
+            class="error"
+          >
+            Vorname ist ein Pflichtfeld.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="contact-lastname">Nachname</label>
+          <input
+            id="contact-lastname"
+            type="text"
+            formControlName="last_name"
+          />
+          <div
+            *ngIf="
+              form.get('contact.last_name')?.invalid &&
+              form.get('contact.last_name')?.touched
+            "
+            class="error"
+          >
+            Nachname ist ein Pflichtfeld.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="contact-email">E-Mail</label>
+          <input id="contact-email" type="email" formControlName="email" />
+          <div
+            *ngIf="form.get('contact.email')?.touched && form.get('contact.email')?.errors?.['required']"
+            class="error"
+          >
+            E-Mail ist ein Pflichtfeld.
+          </div>
+          <div
+            *ngIf="form.get('contact.email')?.touched && form.get('contact.email')?.errors?.['email']"
+            class="error"
+          >
+            Bitte geben Sie eine gültige E-Mail-Adresse ein.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="contact-position">Position</label>
+          <input
+            id="contact-position"
+            type="text"
+            formControlName="position"
+            placeholder="z.B. Personalreferent"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="contact-phone">Telefon</label>
+          <input id="contact-phone" type="tel" formControlName="phone" />
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="form.invalid">
+          Firma & Kontakt speichern
+        </button>
+      </div>
+    </form>
+  <!-- </div> -->
+</div>
