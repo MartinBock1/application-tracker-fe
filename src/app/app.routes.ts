@@ -3,7 +3,6 @@ import { Login } from './auth/login/login';
 import { Registration } from './auth/registration/registration';
 import { ApplicationForm } from './application/application-form/application-form';
 import { ApplicationList } from './application/application-list/application-list';
-
 import { authGuard } from './auth/auth-guard';
 
 export const routes: Routes = [
@@ -32,4 +31,5 @@ export const routes: Routes = [
   },
   
   { path: '', redirectTo: '/applications', pathMatch: 'full' },
+  { path: '**', redirectTo: '/login' } // Wildcard-Route für ungültige URLs
 ];

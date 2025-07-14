@@ -6,25 +6,55 @@
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <label for="username">Benutzername</label>
-        <input id="username" type="text" formControlName="username" placeholder="Dein Benutzername">
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          placeholder="Dein Benutzername"
+        />
       </div>
 
       <div class="form-group">
         <label for="email">E-Mail</label>
-        <input id="email" type="email" formControlName="email" placeholder="deine.email@beispiel.com">
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="deine.email@beispiel.com"
+        />
       </div>
 
       <div class="form-group">
         <label for="password">Passwort</label>
-        <input id="password" type="password" formControlName="password" placeholder="Mindestens 6 Zeichen">
-      </div>
-      
-      <div class="form-group">
-        <label for="repeated_password">Passwort wiederholen</label>
-        <input id="repeated_password" type="password" formControlName="repeated_password" placeholder="Passwort bestätigen">
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Mindestens 6 Zeichen"
+        />
       </div>
 
-      <button type="submit" class="btn btn-primary" [disabled]="registerForm.invalid">
+      <div class="form-group">
+        <label for="repeated_password">Passwort wiederholen</label>
+        <input
+          id="repeated_password"
+          type="password"
+          formControlName="repeated_password"
+          placeholder="Passwort bestätigen"
+        />
+      </div>
+      <div
+        *ngIf="registerForm.errors?.['passwordsMismatch'] && registerForm.get('repeated_password')?.touched"
+        class="error-message"
+      >
+        Die Passwörter stimmen nicht überein.
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="registerForm.invalid"
+      >
         Registrieren
       </button>
 

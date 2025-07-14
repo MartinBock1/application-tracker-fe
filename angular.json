@@ -64,7 +64,8 @@
               "buildTarget": "application-tracker-fe:build:production"
             },
             "development": {
-              "buildTarget": "application-tracker-fe:build:development"
+              "buildTarget": "application-tracker-fe:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
