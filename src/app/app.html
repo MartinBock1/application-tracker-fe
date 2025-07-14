@@ -9,21 +9,14 @@
       <li>
         <a routerLink="/applications/new" routerLinkActive="active-link">Neue Bewerbung</a>
       </li>
+       <li>
+        <a routerLink="/companies/new" routerLinkActive="active-link">Neue Firma anlegen</a>
+      </li>
       <li>
         <!-- Ein Button, der die Logout-Aktion auslöst -->
         <button (click)="logout()">Logout</button>
       </li>
     </ng-container>
-
-    <!-- Diese Links werden nur angezeigt, wenn der Benutzer NICHT eingeloggt ist -->
-    <!-- <ng-container *ngIf="!apiService.isLoggedIn()">
-      <li>
-        <a routerLink="/login" routerLinkActive="active-link">Login</a>
-      </li>
-      <li>
-        <a routerLink="/register" routerLinkActive="active-link">Registrieren</a>
-      </li>
-    </ng-container> -->
   </ul>
 </nav>
 

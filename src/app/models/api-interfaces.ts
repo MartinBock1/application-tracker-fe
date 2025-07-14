@@ -65,6 +65,23 @@ export interface Application {
 
 // --- Schnittstellen für das Erstellen/Aktualisieren von Daten (write-only) ---
 
+// NEU: Payload zum Erstellen einer Firma
+export interface CreateCompanyPayload {
+  name: string;
+  website?: string | null;
+  industry: string;
+}
+
+// NEU: Payload zum Erstellen eines Kontakts
+export interface CreateContactPayload {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  position?: string;
+  company_id: number;  // Hier wird die ID der Firma übergeben
+}
+
 // Beim Erstellen einer Bewerbung senden wir nur die IDs, keine ganzen Objekte.
 export interface CreateApplicationPayload {
   job_title: string;

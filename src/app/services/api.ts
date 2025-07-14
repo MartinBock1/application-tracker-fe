@@ -5,9 +5,12 @@ import {
   Application, 
   AuthResponse, 
   Company,
+  Contact,
   Note, 
   CreateApplicationPayload,
   CreateNotePayload,
+  CreateCompanyPayload,
+  CreateContactPayload,
 } from '../models/api-interfaces';
 
 @Injectable({
@@ -50,6 +53,22 @@ export class Api {
   // --- Companies ---
   getCompanies(): Observable<Company[]> {
     return this.http.get<Company[]>(`${this.apiUrl}/companies/`);
+  }
+
+  createCompany(companyData: CreateCompanyPayload): Observable<Company> {
+    const headers = new HttpHeaders({
+      'Authorization': `Token ${this.getToken()}`
+    });
+    return this.http.post<Company>(`${this.apiUrl}/companies/`, companyData, { headers });
+  }
+
+  // --- Contacts ---
+  // NEU: Methode zum Erstellen eines Kontakts
+  createContact(contactData: CreateContactPayload): Observable<Contact> {
+    const headers = new HttpHeaders({
+      'Authorization': `Token ${this.getToken()}`
+    });
+    return this.http.post<Contact>(`${this.apiUrl}/contacts/`, contactData, { headers });
   }
 
   // --- Notes ---  

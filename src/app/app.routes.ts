@@ -3,6 +3,7 @@ import { Login } from './auth/login/login';
 import { Registration } from './auth/registration/registration';
 import { ApplicationForm } from './application/application-form/application-form';
 import { ApplicationList } from './application/application-list/application-list';
+import { CompanyFormComponent } from './company/company';
 import { authGuard } from './auth/auth-guard';
 
 export const routes: Routes = [
@@ -28,6 +29,12 @@ export const routes: Routes = [
     path: 'applications/edit/:id', // :id ist ein Platzhalter für die Bewerbungs-ID
     component: ApplicationForm, 
     canActivate: [authGuard] 
+  },
+  {
+    path: 'companies/new',
+    component: CompanyFormComponent,
+    title: 'Neue Firma anlegen',
+    canActivate: [authGuard]
   },
   
   { path: '', redirectTo: '/applications', pathMatch: 'full' },
