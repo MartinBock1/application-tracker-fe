@@ -53,9 +53,7 @@
 // Das Grid für die Bewerbungskarten
 .application-grid {
   display: grid;
-  // Erstellt ein responsives Grid: 
-  // Spalten sind min. 320px breit, füllen aber den verfügbaren Platz.
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
   gap: 24px;
 }
 
@@ -111,6 +109,42 @@
     &:hover {
       background-color: #e0e0e0;
     }
+  }
+
+  .notes-section {
+    margin-top: 15px;
+    margin-bottom: 20px;
+    h5 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      color: #333;
+      font-weight: 600;
+    }
+    .notes-list {
+      padding-left: 20px;
+      margin: 0;
+      font-size: 0.9rem;
+      color: #555;
+      li {
+        margin-bottom: 5px;
+      }
+      .note-date {
+        color: #999;
+        font-size: 0.8rem;
+        margin-left: 5px;
+      }
+    }
+    .no-notes-text {
+      font-style: italic;
+      color: #888;
+      font-size: 0.9rem;
+    }
+  }
+
+  .application-date {
+    font-weight: 500;
+    color: #444;
   }
 }
 

@@ -19,21 +19,79 @@
   <div *ngIf="!isLoading && !errorMessage">
     
     <!-- Fall 1: Es gibt Bewerbungen -> Zeige das Gitter an -->
-    <div *ngIf="applications.length > 0; else noApplications" class="application-grid">
-      <div *ngFor="let app of applications" class="application-card">
-        <h3>{{ app.job_title }}</h3>
-        <p class="company-name">{{ app.company.name }}</p>
-        <div class="details">
-          <span>Beworben am: {{ app.applied_on | date:'dd.MM.yyyy' }}</span>
-          <span class="status-badge" [ngClass]="'status-' + app.status">
-            {{ app.status_display }}
-          </span>
-        </div>
-        <p>Notizen:</p>
-        <p>{{ app.notes }}</p>
-        <a class="details-link" [routerLink]="['/applications/edit', app.id]">bearbeiten</a>
-      </div>
-    </div>
+<div *ngIf="applications.length > 0; else noApplications" class="application-grid">
+  
+  <!-- HIER BEGINNT DIE KARTE -->
+<div *ngFor="let app of applications" class="application-card">
+  <h3>{{ app.job_title }}</h3>
+  <p class="company-name">{{ app.company.name }}</p>
+
+  <!-- ========================================================== -->
+  <!-- HIER BEGINNT DER NEUE, KORREKTE DETAILS-BLOCK              -->
+  <!-- ========================================================== -->
+  <div class="details">
+    
+    <!-- Das Status-Badge bleibt wie es ist -->
+    <span class="status-badge" [ngClass]="'status-' + app.status">
+      {{ app.status_display }}
+    </span>
+
+    <!-- [ngSwitch] prüft den Wert von app.status -->
+    <span class="status-date" [ngSwitch]="app.status">
+      
+      <!-- Zeige diesen Block, WENN app.status === 'APPLIED' -->
+      <span *ngSwitchCase="'APPLIED'">
+        Beworben: {{ app.applied_on | date:'dd.MM.yyyy' }}
+      </span>
+      
+      <!-- Zeige diesen Block, WENN app.status === 'INTERVIEW' -->
+      <span *ngSwitchCase="'INTERVIEW'">
+        Interview: {{ app.interview_on | date:'dd.MM.yyyy' }}
+      </span>
+
+      <!-- Zeige diesen Block, WENN app.status === 'OFFER' -->
+      <span *ngSwitchCase="'OFFER'">
+        Angebot: {{ app.offer_on | date:'dd.MM.yyyy' }}
+      </span>
+      
+      <!-- Zeige diesen Block, WENN app.status === 'REJECTED' -->
+      <span *ngSwitchCase="'REJECTED'">
+        Abgelehnt: {{ app.rejected_on | date:'dd.MM.yyyy' }}
+      </span>
+
+      <!-- FALLBACK: Zeige diesen Block für alle anderen Status (z.B. 'DRAFT') -->
+      <span *ngSwitchDefault>
+        Erfasst: {{ app.created_at | date:'dd.MM.yyyy' }}
+      </span>
+    </span>
+  </div>
+
+  <!-- Der "Nachhaken am"-Hinweis (optional, aber nützlich) -->
+  <div class="details follow-up" *ngIf="app.follow_up_on">
+      <span>Nachhaken am: {{ app.follow_up_on | date:'dd.MM.yyyy' }}</span>
+  </div>
+
+
+  <!-- NOTIZEN-SEKTION (bleibt unverändert, war schon korrekt) -->
+  <div class="notes-section">
+    <h5>Notizen:</h5>
+    <ul *ngIf="app.notes && app.notes.length > 0; else noNotes" class="notes-list">
+      <li *ngFor="let note of app.notes">
+        {{ note.text }}
+        <span class="note-date">({{ note.created_at | date:'dd.MM.yyyy' }})</span>
+      </li>
+    </ul>
+    <ng-template #noNotes>
+      <p class="no-notes-text">Keine Notizen vorhanden.</p>
+    </ng-template>
+  </div>
+  
+  <a class="details-link" [routerLink]="['/applications/edit', app.id]">Bearbeiten</a>
+</div>
+<!-- HIER ENDET DIE KARTE -->
+
+</div>
+
 
     <!-- Fall 2: Keine Bewerbungen vorhanden -> Zeige eine "Leer"-Nachricht an -->
     <ng-template #noApplications>
