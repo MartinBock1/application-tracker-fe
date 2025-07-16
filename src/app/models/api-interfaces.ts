@@ -49,9 +49,13 @@ export interface Application {
 
   status: ApplicationStatus;
   status_display: string; // Z.B. "Beworben" statt "APPLIED"
+
   
   // Datumsfelder kommen als String vom Backend
-  applied_on: string | null; 
+  applied_on: string | null;
+  interview_on: string | null;
+  offer_on: string | null;
+  rejected_on: string | null;
   follow_up_on: string | null;
 
   job_posting_link: string;
@@ -65,14 +69,14 @@ export interface Application {
 
 // --- Schnittstellen für das Erstellen/Aktualisieren von Daten (write-only) ---
 
-// NEU: Payload zum Erstellen einer Firma
+// Payload zum Erstellen einer Firma
 export interface CreateCompanyPayload {
   name: string;
   website?: string | null;
   industry: string;
 }
 
-// NEU: Payload zum Erstellen eines Kontakts
+//Payload zum Erstellen eines Kontakts
 export interface CreateContactPayload {
   first_name: string;
   last_name: string;
@@ -89,9 +93,13 @@ export interface CreateApplicationPayload {
   contact_id?: number | null; // Optional
   status: ApplicationStatus;
   applied_on?: string | null;
+  interview_on?: string | null;
+  offer_on?: string | null;
+  rejected_on?: string | null;
   follow_up_on?: string | null;
   job_posting_link?: string;
   salary_expectation?: number | null;
+  notes?: { id?: number; text: string }[];
 }
 
 export interface CreateNotePayload {
