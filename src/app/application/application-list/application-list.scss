@@ -8,7 +8,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   padding-bottom: 20px;
 
   h2 {
@@ -20,7 +20,7 @@
 .loading-indicator, .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .spinner {
@@ -39,8 +39,6 @@
 }
 
 .error-message {
-  // Nimmt den Stil aus der Auth-Komponente, falls dort global definiert,
-  // ansonsten hier definieren:
   color: #d9534f;
   background-color: #f2dede;
   border: 1px solid #ebccd1;
@@ -50,105 +48,334 @@
 }
 
 
-// Das Grid für die Bewerbungskarten
-.application-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
-  gap: 24px;
+// // Das Grid für die Bewerbungskarten
+// .application-grid {
+//   display: grid;
+//   grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+//   gap: 24px;
+// }
+
+// // Styling für die einzelne Karte
+// .application-card {
+//   background-color: var(--card-background-color);
+//   border: 1px solid rgba(255, 255, 255, 0.1);
+//   border-radius: 8px;
+//   padding: 20px;
+//   box-shadow: none;
+//   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+//   display: flex;
+//   flex-direction: column;
+
+//   &:hover {
+//     transform: translateY(-5px);
+//     border-color: var(--input-border-color);
+//   }
+
+//   h3 {
+//     margin-top: 0;
+//     margin-bottom: 8px;
+//     font-size: 1.2rem;
+//   }
+
+//   .company-name {
+//     color: rgba(255, 255, 255, 0.8);
+//     font-weight: 500;
+//     margin-top: 0;
+//     margin-bottom: 16px;
+//   }
+
+//   .details {
+//     display: flex;
+//     justify-content: space-between;
+//     align-items: center;
+//     margin-bottom: 20px;
+//     font-size: 0.9rem;
+//     color: rgba(255, 255, 255, 0.6);
+//   }
+
+//   .details-link {
+//     margin-top: auto;
+//     background-color: rgba(255, 255, 255, 0.1);
+//     color: var(--text-color);
+//     text-align: center;
+//     padding: 10px;
+//     border-radius: 4px;
+//     text-decoration: none;
+//     font-weight: 500;
+//     transition: background-color 0.2s;
+
+//     &:hover {
+//       background-color: rgba(255, 255, 255, 0.2);
+//     }
+//   }
+
+//   .notes-section {
+//     margin-top: 15px;
+//     margin-bottom: 20px;
+//     h5 {
+//       margin-top: 0;
+//       margin-bottom: 8px;
+//       font-size: 0.9rem;
+//       color: #333;
+//       font-weight: 600;
+//     }
+//     .notes-list {
+//       padding-left: 20px;
+//       margin: 0;
+//       font-size: 0.9rem;
+//       color: rgba(255, 255, 255, 0.85);
+//       li {
+//         margin-bottom: 5px;
+//       }
+//       .note-date {
+//         color: rgba(255, 255, 255, 0.5);
+//         font-size: 0.8rem;
+//         margin-left: 5px;
+//       }
+//     }
+//     .no-notes-text {
+//       font-style: italic;
+//        color: rgba(255, 255, 255, 0.6);
+//       font-size: 0.9rem;
+//     }
+//   }
+
+//   .application-date {
+//     font-weight: 500;
+//     color: #444;
+//   }
+// }
+
+// // Styling für die Status-Badges
+// .status-badge {
+//   padding: 4px 10px;
+//   border-radius: 12px;
+//   font-size: 0.8rem;
+//   font-weight: 500;
+//   color: white;
+
+//   &.status-DRAFT { background-color: #6c757d; }
+//   &.status-APPLIED { background-color: #007bff; }
+//   &.status-INTERVIEW { background-color: #ffc107; color: #333; }
+//   &.status-OFFER { background-color: #28a745; }
+//   &.status-REJECTED { background-color: #dc3545; }
+//   &.status-WITHDRAWN { background-color: #343a40; }
+// }
+
+// /* ==============================================
+//    NEUE STILE FÜR DIE FILTER-LEISTE
+//    ============================================== */
+// .filter-bar {
+//   display: flex;
+//   flex-wrap: wrap;
+//   gap: 10px;
+//   margin-top: 20px;
+//   padding-top: 20px;
+//   border-top: 1px solid rgba(255, 255, 255, 0.15);
+// }
+
+// .filter-button {
+//   padding: 8px 16px;
+//   border-radius: 20px;
+//   border: 1px solid rgba(255, 255, 255, 0.2);
+//   background-color: transparent;
+//   color: rgba(255, 255, 255, 0.8);
+//   font-weight: 500;
+//   font-size: 0.9rem;
+//   cursor: pointer;
+//   transition: all 0.2s ease-in-out;
+
+//   &:hover {
+//     background-color: rgba(255, 255, 255, 0.1);
+//     border-color: rgba(255, 255, 255, 0.4);
+//   }
+
+//   // So sieht der AKTIVE Button aus
+//   &.active {
+//     background-color: var(--primary-color);
+//     border-color: var(--primary-color);
+//     color: #000; 
+//     font-weight: bold;
+//   }
+// }
+
+// // Optional: Den Rand vom Header entfernen, da die Filterleiste ihn jetzt hat
+// .list-header {
+//   border-bottom: none;
+//   padding-bottom: 0;
+//   flex-direction: column;
+//   align-items: flex-start;
+// }
+
+// /* ==============================================
+//    NEUE STILE FÜR FOLLOW-UP-FUNKTIONEN
+//    ============================================== */
+
+// // Spezielles Aussehen für den "Nachhaken"-Button
+// .filter-button.follow-up-button {
+//   background-color: transparent;
+//   border-color: #ffc107;
+//   color: #ffc107;
+
+//   &:hover {
+//     background-color: rgba(255, 193, 7, 0.1);
+//   }
+
+//   &.active {
+//     background-color: #ffc107;
+//     border-color: #ffc107;
+//     color: #000;
+//   }
+
+//   // Styling für den kleinen Zähler (die "Blase")
+  // .badge {
+  //   display: inline-block;
+  //   background-color: rgba(0, 0, 0, 0.2);
+  //   color: white;
+  //   padding: 2px 8px;
+  //   font-size: 0.8em;
+  //   border-radius: 10px;
+  //   margin-left: 8px;
+  //   line-height: 1.2;
+  // }
+  
+  // &.active .badge {
+  //   background-color: rgba(0, 0, 0, 0.25);
+  //   color: #000;
+  // }
+// }
+
+// // Styling für die hervorgehobene Karte
+// .application-card.follow-up-due {
+//   box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+//   border: 2px solid;
+//   border-color: #ffc107;
+// }
+
+/* ==========================================================================
+   NEUE STILE FÜR DAS KANBAN-BOARD
+   ========================================================================== */
+.kanban-board-container {
+  overflow-x: auto; // Ermöglicht horizontales Scrollen auf kleineren Bildschirmen
+  padding-bottom: 20px; // Platz für den Scrollbalken
 }
 
-// Styling für die einzelne Karte
-.application-card {
-  background-color: white;
-  border: 1px solid #e0e0e0;
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); 
+  gap: 20px;
+}
+
+.kanban-column {
+ background-color: rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   display: flex;
   flex-direction: column;
+  min-width: 200px; 
+}
+
+.kanban-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .card-count {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+  }
+}
+
+.kanban-cards-container {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex-grow: 1; // Füllt den verfügbaren Platz in der Spalte
+  overflow-y: auto; // Ermöglicht Scrollen innerhalb der Spalte, wenn sie voll ist
+}
+
+.empty-column-text {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 40px 0;
+  font-style: italic;
+}
+
+
+/* ==========================================================================
+   KARTEN-STYLING (größtenteils übernommen, leicht angepasst)
+   ========================================================================== */
+.application-card {
+  background-color: var(--card-background-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.25);
   }
 
   h3 {
-    margin-top: 0;
-    margin-bottom: 8px;
-    font-size: 1.2rem;
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
   }
 
   .company-name {
-    color: #555;
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
-    margin-top: 0;
-    margin-bottom: 16px;
+    margin: 0 0 12px 0;
   }
 
   .details {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    font-size: 0.9rem;
-    color: #777;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 8px;
   }
-
+  
+  .follow-up {
+    font-weight: bold;
+    color: #ffc107;
+  }
+  
   .details-link {
-    margin-top: auto; // Schiebt den Link nach unten
-    background-color: #f0f0f0;
-    color: #333;
+    margin-top: 15px;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-color);
     text-align: center;
-    padding: 10px;
+    padding: 8px;
     border-radius: 4px;
     text-decoration: none;
     font-weight: 500;
     transition: background-color 0.2s;
 
     &:hover {
-      background-color: #e0e0e0;
+      background-color: rgba(255, 255, 255, 0.1);
     }
-  }
-
-  .notes-section {
-    margin-top: 15px;
-    margin-bottom: 20px;
-    h5 {
-      margin-top: 0;
-      margin-bottom: 8px;
-      font-size: 0.9rem;
-      color: #333;
-      font-weight: 600;
-    }
-    .notes-list {
-      padding-left: 20px;
-      margin: 0;
-      font-size: 0.9rem;
-      color: #555;
-      li {
-        margin-bottom: 5px;
-      }
-      .note-date {
-        color: #999;
-        font-size: 0.8rem;
-        margin-left: 5px;
-      }
-    }
-    .no-notes-text {
-      font-style: italic;
-      color: #888;
-      font-size: 0.9rem;
-    }
-  }
-
-  .application-date {
-    font-weight: 500;
-    color: #444;
   }
 }
 
-// Styling für die Status-Badges
 .status-badge {
   padding: 4px 10px;
   border-radius: 12px;
@@ -156,10 +383,16 @@
   font-weight: 500;
   color: white;
 
-  &.status-DRAFT { background-color: #6c757d; } // Grau
-  &.status-APPLIED { background-color: #007bff; } // Blau
-  &.status-INTERVIEW { background-color: #ffc107; color: #333; } // Gelb
-  &.status-OFFER { background-color: #28a745; } // Grün
-  &.status-REJECTED { background-color: #dc3545; } // Rot
-  &.status-WITHDRAWN { background-color: #343a40; } // Dunkelgrau
+  &.status-DRAFT { background-color: #6c757d; }
+  &.status-APPLIED { background-color: #007bff; }
+  &.status-INTERVIEW { background-color: #ffc107; color: #333; }
+  &.status-OFFER { background-color: #28a745; }
+  &.status-REJECTED { background-color: #dc3545; }
+  &.status-WITHDRAWN { background-color: #343a40; }
+}
+
+// Hervorhebung für fällige Karten
+.application-card.follow-up-due {
+  box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
+  border-color: #ffc107;
 }

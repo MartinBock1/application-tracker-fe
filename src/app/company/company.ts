@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { switchMap } from 'rxjs';
 import { Api } from '../services/api';
 import { CreateCompanyPayload, CreateContactPayload } from '../models/api-interfaces';
+import { NotificationService } from '../services/notification';
 
 @Component({
   selector: 'app-company-form',
@@ -17,6 +18,7 @@ export class CompanyFormComponent {
   private fb = inject(FormBuilder);
   private api = inject(Api);
   private router = inject(Router);
+  private notificationService = inject(NotificationService);
 
   // Wir erstellen ein Formular mit zwei verschachtelten Gruppen
   form: FormGroup = this.fb.group({
@@ -36,8 +38,8 @@ export class CompanyFormComponent {
 
   submit() {
     if (this.form.invalid) {
-      // Markiere alle Felder als "touched", um Validierungsfehler anzuzeigen
       this.form.markAllAsTouched();
+      this.notificationService.showWarning('Bitte füllen Sie alle Pflichtfelder korrekt aus.', 'Ungültige Eingabe');
       return;
     }
 
@@ -52,19 +54,24 @@ export class CompanyFormComponent {
       switchMap(newCompany => {
         const contactPayload: CreateContactPayload = {
           ...contactData,
-          company_id: newCompany.id // Hier wird die ID der neuen Firma zugewiesen
+          company_id: newCompany.id
         };
         return this.api.createContact(contactPayload);
       })
     ).subscribe({
-      next: () => {
-        console.log('Firma und Kontakt erfolgreich erstellt!');
-        // Nach Erfolg zur Bewerbungsliste navigieren
+      next: (newContact) => {
+        this.notificationService.showSuccess(
+          `Kontakt für ${newContact.first_name} ${newContact.last_name} wurde erfolgreich angelegt.`,
+          'Alles gespeichert!'
+        );
         this.router.navigate(['/applications']);
       },
       error: (err) => {
-        console.error('Fehler beim Erstellen:', err);
-        // Hier könnten Sie dem Benutzer eine Fehlermeldung anzeigen
+        this.notificationService.showError(
+          'Ein Fehler ist aufgetreten. Bitte prüfen Sie die Eingaben und Ihre Verbindung.',
+          'Speichern fehlgeschlagen'
+        );
+        console.error('Fehler beim Erstellen von Firma/Kontakt:', err);
       }
     });
   }

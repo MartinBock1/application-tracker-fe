@@ -11,6 +11,7 @@
   background-color: var(--card-background-color);
   padding: 40px;
   border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
@@ -26,7 +27,7 @@
   .subtitle {
     text-align: center;
     margin-bottom: 30px;
-    color: #666;
+    color: rgba(255, 255, 255, 0.7);
   }
 }
 
@@ -42,13 +43,20 @@
   input {
     width: 100%;
     padding: 12px 15px;
-    border: 1px solid var(--input-border-color);
+    border: 1px solid #1a4a5b;
     border-radius: 4px;
     box-sizing: border-box;
     transition: border-color 0.3s;
+    background-color: #082630;
+    color: var(--text-color);
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
 
     &:focus {
       outline: none;
+      background-color: var(--card-background-color);
       border-color: var(--input-focus-border-color);
       box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
     }
@@ -74,16 +82,17 @@
     }
     
     &:disabled {
-      background-color: #ccc;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.4);
       cursor: not-allowed;
     }
   }
 }
 
 .error-message {
-  color: #d9534f;
-  background-color: #f2dede;
-  border: 1px solid #ebccd1;
+  color: #f5c6cb;
+  background-color: rgba(220, 53, 69, 0.2); // Dunkler roter Hintergrund
+  border: 1px solid rgba(220, 53, 69, 0.5); // Passender roter Rand
   border-radius: 4px;
   padding: 10px;
   text-align: center;
@@ -102,6 +111,7 @@
 
     &:hover {
       text-decoration: underline;
+      color: var(--primary-color-hover);
     }
   }
 }

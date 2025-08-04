@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Api } from '../../services/api';
 import { Application } from '../../models/api-interfaces';
+import { NotificationService } from '../../services/notification';
 
 @Component({
   selector: 'app-application-list',
@@ -13,11 +14,21 @@ import { Application } from '../../models/api-interfaces';
 })
 export class ApplicationList implements OnInit {
   private apiService = inject(Api);
+  private notificationService = inject(NotificationService);
 
-  // Zustand der Komponente
-  applications: Application[] = [];
-  isLoading = true; // Startet im Ladezustand
-  errorMessage: string | null = null;
+  // --- EIGENSCHAFTEN FÜR DAS KANBAN-BOARD ---
+  public allApplications: Application[] = [];
+  public readonly statusOrder = ['DRAFT', 'APPLIED', 'INTERVIEW', 'OFFER', 'REJECTED'];
+  public readonly statusTitleMap: { [key: string]: string } = {
+    DRAFT: 'Entwürfe',
+    APPLIED: 'Beworben',
+    INTERVIEW: 'Interview',
+    OFFER: 'Angebote',
+    REJECTED: 'Abgelehnt'
+  };
+  public groupedApplications: { [key: string]: Application[] } = {};
+  public isLoading = true;
+  public errorMessage: string | null = null;
 
   ngOnInit(): void {
     this.loadApplications();
@@ -26,19 +37,38 @@ export class ApplicationList implements OnInit {
   loadApplications(): void {
     this.isLoading = true;
     this.errorMessage = null;
-
     this.apiService.getApplications().subscribe({
       next: (data) => {
-        this.applications = data;
+        this.allApplications = data;
+        this.updateGroupedApplications();
         this.isLoading = false;
-        console.log('Bewerbungen geladen:', data);
       },
       error: (err) => {
-        console.error('Fehler beim Laden der Bewerbungen:', err);
-        // Gib eine benutzerfreundliche Fehlermeldung aus
-        this.errorMessage = 'Fehler beim Laden der Bewerbungen. Bitte versuchen Sie es später erneut.';
+        this.notificationService.showError('Die Bewerbungen konnten nicht vom Server geladen werden.', 'Ladefehler');
+        this.errorMessage = 'Fehler beim Laden der Bewerbungen.'; 
         this.isLoading = false;
+        console.error(err);
       }
     });
+  }
+  
+  private updateGroupedApplications(): void {
+    this.groupedApplications = {};
+    for (const status of this.statusOrder) {
+      this.groupedApplications[status] = [];
+    }
+    for (const app of this.allApplications) {
+      if (this.groupedApplications[app.status]) {
+        this.groupedApplications[app.status].push(app);
+      }
+    }
+  }
+  
+  public isFollowUpDue(dateString: string | null): boolean {
+    if (!dateString) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const followUpDate = new Date(dateString);
+    return followUpDate <= today;
   }
 }

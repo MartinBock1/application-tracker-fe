@@ -1,14 +1,55 @@
+// Importiere die geteilten Stile. Das gibt uns .auth-container, .auth-card etc.
 @use '../../app/auth/auth-forms' as *;
 
-.form-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* ==========================================================================
+   Spezifische Overrides & Ergänzungen für das Firmen/Kontakt-Formular
+   ========================================================================== */
+
+// Wir geben der Karte eine passende Breite für dieses größere Formular.
+.auth-container {
   flex-direction: column;
-  min-height: 90vh; // Zentriert die Karte vertikal
-  padding: 20px;
 }
 
-.auth-card{
-    max-width: 600px;
+.auth-card {
+  max-width: 700px;
+}
+
+// Styling für die neuen <fieldset> und <legend> Elemente
+fieldset {
+  // Entfernt den hässlichen Standard-Rahmen des Browsers
+  border: none;
+  padding: 0;
+  margin: 0;
+
+  // Fügt einen deutlichen Abstand zwischen den beiden Sektionen hinzu
+  & + fieldset {
+    margin-top: 40px;
+  }
+}
+
+legend {
+  width: 100%; // Sorgt dafür, dass der untere Rand die volle Breite einnimmt
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  // Ein dezenter unterer Rand, um die Sektionen klar zu trennen
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+// Styling für die Validierungs-Fehlermeldungen (Klasse .error)
+.error {
+  padding-top: 6px;
+  font-size: 0.85rem;
+  // Wir verwenden die gleiche rote Farbe wie bei .error-message
+  color: #f5c6cb; 
+  font-weight: 500;
+}
+
+// Styling für den Container, der den finalen Button umschließt
+.form-actions {
+  display: flex;
+  justify-content: flex-end; // Schiebt den Button nach rechts
+  margin-top: 40px;
 }

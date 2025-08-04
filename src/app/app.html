@@ -1,29 +1,43 @@
-<nav>
-  <h3>Navigation</h3>
-  <ul>
-     <!-- Diese Links werden nur angezeigt, wenn der Benutzer eingeloggt ist -->
-    <ng-container *ngIf="apiService.isLoggedIn()">
-      <li>
-        <a routerLink="/applications" routerLinkActive="active-link">Meine Bewerbungen</a>
-      </li>
-      <li>
-        <a routerLink="/applications/new" routerLinkActive="active-link">Neue Bewerbung</a>
-      </li>
-       <li>
-        <a routerLink="/companies/new" routerLinkActive="active-link">Neue Firma anlegen</a>
-      </li>
-      <li>
-        <!-- Ein Button, der die Logout-Aktion auslöst -->
-        <button (click)="logout()">Logout</button>
-      </li>
-    </ng-container>
-  </ul>
-</nav>
+<div class="app-wrapper">
+  <nav class="main-nav" *ngIf="apiService.isLoggedIn()">
+    <div class="nav-links">
+      <!-- Der routerLinkActive-Klasse wird automatisch von Angular gesetzt -->
+      <a
+        routerLink="/applications"
+        routerLinkActive="active-link"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-button"
+      >
+        Meine Bewerbungen
+      </a>
 
-<hr>
+      <a
+        routerLink="/applications/new"
+        routerLinkActive="active-link"
+        class="nav-button"
+      >
+        Neue Bewerbung
+      </a>
+      <a
+        routerLink="/companies/new"
+        routerLinkActive="active-link"
+        class="nav-button"
+      >
+        Neue Firma
+      </a>
+    </div>
 
-<main>
-  <h1>Inhalt der Seite:</h1>
+    <div class="nav-actions">
+      <!-- Der Logout-Button bekommt eine extra Klasse für separates Styling -->
+      <button (click)="logout()" class="nav-button nav-button--logout">
+        Logout
+      </button>
+    </div>
+  </nav>
+</div>
+
+<!-- Der Hauptinhalt deiner Anwendung rückt unter die Navigation -->
+<main class="main-content">
   <!-- Der Router rendert hier die Komponenten -->
   <router-outlet></router-outlet>
 </main>

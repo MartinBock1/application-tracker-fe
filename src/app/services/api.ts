@@ -1,20 +1,20 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { 
-  Application, 
-  AuthResponse, 
+import {
+  Application,
+  AuthResponse,
   Company,
   Contact,
-  Note, 
+  // Note,
   CreateApplicationPayload,
-  CreateNotePayload,
+  // CreateNotePayload,
   CreateCompanyPayload,
   CreateContactPayload,
 } from '../models/api-interfaces';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class Api {
   private http = inject(HttpClient);
@@ -22,11 +22,17 @@ export class Api {
 
   // --- Authentifizierung ---
   register(userData: any): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/registration/`, userData);
+    return this.http.post<AuthResponse>(
+      `${this.apiUrl}/auth/registration/`,
+      userData
+    );
   }
 
   login(credentials: any): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login/`, credentials);
+    return this.http.post<AuthResponse>(
+      `${this.apiUrl}/auth/login/`,
+      credentials
+    );
   }
 
   // --- Token-Management & Status ---
@@ -49,7 +55,7 @@ export class Api {
     // Ein Benutzer gilt als eingeloggt, wenn ein Token vorhanden ist.
     return this.getToken() !== null;
   }
-  
+
   // --- Companies ---
   getCompanies(): Observable<Company[]> {
     return this.http.get<Company[]>(`${this.apiUrl}/companies/`);
@@ -57,61 +63,81 @@ export class Api {
 
   createCompany(companyData: CreateCompanyPayload): Observable<Company> {
     const headers = new HttpHeaders({
-      'Authorization': `Token ${this.getToken()}`
+      Authorization: `Token ${this.getToken()}`,
     });
-    return this.http.post<Company>(`${this.apiUrl}/companies/`, companyData, { headers });
+    return this.http.post<Company>(`${this.apiUrl}/companies/`, companyData, {
+      headers,
+    });
   }
 
   // --- Contacts ---
   // NEU: Methode zum Erstellen eines Kontakts
   createContact(contactData: CreateContactPayload): Observable<Contact> {
     const headers = new HttpHeaders({
-      'Authorization': `Token ${this.getToken()}`
+      Authorization: `Token ${this.getToken()}`,
     });
-    return this.http.post<Contact>(`${this.apiUrl}/contacts/`, contactData, { headers });
+    return this.http.post<Contact>(`${this.apiUrl}/contacts/`, contactData, {
+      headers,
+    });
   }
 
-  // --- Notes ---  
+  // --- Notes ---
   // NEUE METHODE: Erstellt eine neue Notiz.
-  createNote(payload: CreateNotePayload): Observable<Note> {
-    const headers = new HttpHeaders({
-      'Authorization': `Token ${this.getToken()}`
-    });
-    // POST-Anfrage an den /notes/ Endpunkt deines Backends
-    return this.http.post<Note>(`${this.apiUrl}/notes/`, payload, { headers });
-  }
-
+  // createNote(payload: CreateNotePayload): Observable<Note> {
+  //   const headers = new HttpHeaders({
+  //     'Authorization': `Token ${this.getToken()}`
+  //   });
+  //   // POST-Anfrage an den /notes/ Endpunkt deines Backends
+  //   return this.http.post<Note>(`${this.apiUrl}/notes/`, payload, { headers });
+  // }
 
   // --- Applications ---
-  createApplication(applicationData: CreateApplicationPayload): Observable<Application> {
+  createApplication(
+    applicationData: CreateApplicationPayload
+  ): Observable<Application> {
     const headers = new HttpHeaders({
-      'Authorization': `Token ${this.getToken()}`
+      Authorization: `Token ${this.getToken()}`,
     });
-    return this.http.post<Application>(`${this.apiUrl}/applications/`, applicationData, { headers });
+    return this.http.post<Application>(
+      `${this.apiUrl}/applications/`,
+      applicationData,
+      { headers }
+    );
   }
 
   getApplications(): Observable<Application[]> {
     const headers = new HttpHeaders({
-      'Authorization': `Token ${this.getToken()}`
+      Authorization: `Token ${this.getToken()}`,
     });
     // Wichtig: Der Endpunkt für die Liste hat keine ID am Ende
-    return this.http.get<Application[]>(`${this.apiUrl}/applications/`, { headers });
+    return this.http.get<Application[]>(`${this.apiUrl}/applications/`, {
+      headers,
+    });
   }
 
   // NEU: Methode, um EINE Bewerbung anhand ihrer ID zu holen
   getApplicationById(id: string): Observable<Application> {
     const headers = new HttpHeaders({
-      'Authorization': `Token ${this.getToken()}`
+      Authorization: `Token ${this.getToken()}`,
     });
-    return this.http.get<Application>(`${this.apiUrl}/applications/${id}/`, { headers });
+    return this.http.get<Application>(`${this.apiUrl}/applications/${id}/`, {
+      headers,
+    });
   }
 
   // NEU: Methode, um eine bestehende Bewerbung zu aktualisieren
-  updateApplication(id: string, applicationData: CreateApplicationPayload): Observable<Application> {
+  updateApplication(
+    id: string,
+    applicationData: CreateApplicationPayload
+  ): Observable<Application> {
     const headers = new HttpHeaders({
-      'Authorization': `Token ${this.getToken()}`
+      Authorization: `Token ${this.getToken()}`,
     });
-    // Für Updates wird typischerweise die PUT- oder PATCH-Methode verwendet
-    return this.http.put<Application>(`${this.apiUrl}/applications/${id}/`, applicationData, { headers });
+    // Die interne Logik der Methode ist korrekt und bleibt gleich.
+    return this.http.put<Application>(
+      `${this.apiUrl}/applications/${id}/`,
+      applicationData,
+      { headers }
+    );
   }
 }

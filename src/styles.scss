@@ -1,3 +1,5 @@
+@import 'ngx-toastr/toastr';
+
 /* You can add global styles to this file, and also import other style files */
 /* roboto-300 - latin_latin-ext */
 @font-face {
@@ -26,13 +28,15 @@
 
 // 3. Der Rest deines globalen CSS bleibt gleich.
 :root {
-  --primary-color: #007bff;
-  --primary-color-hover: #0056b3;
-  --background-color: #f4f7f6;
-  --card-background-color: #ffffff;
-  --text-color: #333;
+  --primary-color: #00ff2a85;
+  --primary-color-hover: #00d423;
+  // --background-color: #f4f7f6;
+  --background-color: #05171e;
+  // --card-background-color: #ffffff;
+  --card-background-color: #0d3340;
+  --text-color: #fefefe;
   --input-border-color: #ccc;
-  --input-focus-border-color: #007bff;
+  --input-focus-border-color: #00ff2a;
 }
 
 body {
