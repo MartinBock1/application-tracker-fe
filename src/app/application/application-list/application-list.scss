@@ -1,7 +1,6 @@
-// Container und Header
-.list-container {
-  padding: 20px 40px;
-}
+/* ==========================================================================
+   Styling für den Header
+   ========================================================================== */
 
 .list-header {
   display: flex;
@@ -13,6 +12,38 @@
 
   h2 {
     margin: 0;
+  }
+}
+
+.list-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px; // Abstand zwischen Titel und Indikator
+}
+
+.follow-up-indicator {
+  background-color: #ffc107; // Gleiches Gelb wie bei den fälligen Karten
+  color: #212529; // Dunkler Text für guten Kontrast
+  padding: 5px 12px;
+  border-radius: 15px; // Pillen-Form
+  font-size: 0.85rem;
+  font-weight: 600;
+  animation: pulse 2s infinite; // Eine subtile Animation, um Aufmerksamkeit zu erregen
+}
+
+// Optionale Puls-Animation
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
   }
 }
 
@@ -47,217 +78,11 @@
   text-align: center;
 }
 
-
-// // Das Grid für die Bewerbungskarten
-// .application-grid {
-//   display: grid;
-//   grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
-//   gap: 24px;
-// }
-
-// // Styling für die einzelne Karte
-// .application-card {
-//   background-color: var(--card-background-color);
-//   border: 1px solid rgba(255, 255, 255, 0.1);
-//   border-radius: 8px;
-//   padding: 20px;
-//   box-shadow: none;
-//   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-//   display: flex;
-//   flex-direction: column;
-
-//   &:hover {
-//     transform: translateY(-5px);
-//     border-color: var(--input-border-color);
-//   }
-
-//   h3 {
-//     margin-top: 0;
-//     margin-bottom: 8px;
-//     font-size: 1.2rem;
-//   }
-
-//   .company-name {
-//     color: rgba(255, 255, 255, 0.8);
-//     font-weight: 500;
-//     margin-top: 0;
-//     margin-bottom: 16px;
-//   }
-
-//   .details {
-//     display: flex;
-//     justify-content: space-between;
-//     align-items: center;
-//     margin-bottom: 20px;
-//     font-size: 0.9rem;
-//     color: rgba(255, 255, 255, 0.6);
-//   }
-
-//   .details-link {
-//     margin-top: auto;
-//     background-color: rgba(255, 255, 255, 0.1);
-//     color: var(--text-color);
-//     text-align: center;
-//     padding: 10px;
-//     border-radius: 4px;
-//     text-decoration: none;
-//     font-weight: 500;
-//     transition: background-color 0.2s;
-
-//     &:hover {
-//       background-color: rgba(255, 255, 255, 0.2);
-//     }
-//   }
-
-//   .notes-section {
-//     margin-top: 15px;
-//     margin-bottom: 20px;
-//     h5 {
-//       margin-top: 0;
-//       margin-bottom: 8px;
-//       font-size: 0.9rem;
-//       color: #333;
-//       font-weight: 600;
-//     }
-//     .notes-list {
-//       padding-left: 20px;
-//       margin: 0;
-//       font-size: 0.9rem;
-//       color: rgba(255, 255, 255, 0.85);
-//       li {
-//         margin-bottom: 5px;
-//       }
-//       .note-date {
-//         color: rgba(255, 255, 255, 0.5);
-//         font-size: 0.8rem;
-//         margin-left: 5px;
-//       }
-//     }
-//     .no-notes-text {
-//       font-style: italic;
-//        color: rgba(255, 255, 255, 0.6);
-//       font-size: 0.9rem;
-//     }
-//   }
-
-//   .application-date {
-//     font-weight: 500;
-//     color: #444;
-//   }
-// }
-
-// // Styling für die Status-Badges
-// .status-badge {
-//   padding: 4px 10px;
-//   border-radius: 12px;
-//   font-size: 0.8rem;
-//   font-weight: 500;
-//   color: white;
-
-//   &.status-DRAFT { background-color: #6c757d; }
-//   &.status-APPLIED { background-color: #007bff; }
-//   &.status-INTERVIEW { background-color: #ffc107; color: #333; }
-//   &.status-OFFER { background-color: #28a745; }
-//   &.status-REJECTED { background-color: #dc3545; }
-//   &.status-WITHDRAWN { background-color: #343a40; }
-// }
-
-// /* ==============================================
-//    NEUE STILE FÜR DIE FILTER-LEISTE
-//    ============================================== */
-// .filter-bar {
-//   display: flex;
-//   flex-wrap: wrap;
-//   gap: 10px;
-//   margin-top: 20px;
-//   padding-top: 20px;
-//   border-top: 1px solid rgba(255, 255, 255, 0.15);
-// }
-
-// .filter-button {
-//   padding: 8px 16px;
-//   border-radius: 20px;
-//   border: 1px solid rgba(255, 255, 255, 0.2);
-//   background-color: transparent;
-//   color: rgba(255, 255, 255, 0.8);
-//   font-weight: 500;
-//   font-size: 0.9rem;
-//   cursor: pointer;
-//   transition: all 0.2s ease-in-out;
-
-//   &:hover {
-//     background-color: rgba(255, 255, 255, 0.1);
-//     border-color: rgba(255, 255, 255, 0.4);
-//   }
-
-//   // So sieht der AKTIVE Button aus
-//   &.active {
-//     background-color: var(--primary-color);
-//     border-color: var(--primary-color);
-//     color: #000; 
-//     font-weight: bold;
-//   }
-// }
-
-// // Optional: Den Rand vom Header entfernen, da die Filterleiste ihn jetzt hat
-// .list-header {
-//   border-bottom: none;
-//   padding-bottom: 0;
-//   flex-direction: column;
-//   align-items: flex-start;
-// }
-
-// /* ==============================================
-//    NEUE STILE FÜR FOLLOW-UP-FUNKTIONEN
-//    ============================================== */
-
-// // Spezielles Aussehen für den "Nachhaken"-Button
-// .filter-button.follow-up-button {
-//   background-color: transparent;
-//   border-color: #ffc107;
-//   color: #ffc107;
-
-//   &:hover {
-//     background-color: rgba(255, 193, 7, 0.1);
-//   }
-
-//   &.active {
-//     background-color: #ffc107;
-//     border-color: #ffc107;
-//     color: #000;
-//   }
-
-//   // Styling für den kleinen Zähler (die "Blase")
-  // .badge {
-  //   display: inline-block;
-  //   background-color: rgba(0, 0, 0, 0.2);
-  //   color: white;
-  //   padding: 2px 8px;
-  //   font-size: 0.8em;
-  //   border-radius: 10px;
-  //   margin-left: 8px;
-  //   line-height: 1.2;
-  // }
-  
-  // &.active .badge {
-  //   background-color: rgba(0, 0, 0, 0.25);
-  //   color: #000;
-  // }
-// }
-
-// // Styling für die hervorgehobene Karte
-// .application-card.follow-up-due {
-//   box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
-//   border: 2px solid;
-//   border-color: #ffc107;
-// }
-
 /* ==========================================================================
-   NEUE STILE FÜR DAS KANBAN-BOARD
+   Styling für das Kanban-Board
    ========================================================================== */
 .kanban-board-container {
-  overflow-x: auto; // Ermöglicht horizontales Scrollen auf kleineren Bildschirmen
-  padding-bottom: 20px; // Platz für den Scrollbalken
+  overflow-x: auto;
 }
 
 .kanban-board {
@@ -267,7 +92,7 @@
 }
 
 .kanban-column {
- background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(13, 47, 53, 0.6);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -280,6 +105,9 @@
   align-items: center;
   padding: 15px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgb(13, 47, 53); 
+  border-top-left-radius: 8px;  
+  border-top-right-radius: 8px;
   
   h3 {
     margin: 0;
@@ -299,12 +127,14 @@
 }
 
 .kanban-cards-container {
-  padding: 15px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 15px;
-  flex-grow: 1; // Füllt den verfügbaren Platz in der Spalte
-  overflow-y: auto; // Ermöglicht Scrollen innerhalb der Spalte, wenn sie voll ist
+  flex-grow: 1; 
+  overflow-y: auto;
+  max-height: 65vh;
+  padding-right: 8px;
 }
 
 .empty-column-text {
@@ -316,7 +146,7 @@
 
 
 /* ==========================================================================
-   KARTEN-STYLING (größtenteils übernommen, leicht angepasst)
+   Styling für die Karten 
    ========================================================================== */
 .application-card {
   background-color: var(--card-background-color);
@@ -395,4 +225,84 @@
 .application-card.follow-up-due {
   box-shadow: 0 0 15px rgba(255, 193, 7, 0.4);
   border-color: #ffc107;
+}
+
+/* ==========================================================================
+   Responsive Styles für das mobile Kanban-Board (Horizontal-Scroll-Layout)
+   ========================================================================== */
+@media (max-width: 992px) {
+
+  // 1. Das Haupt-Board wird zu einem einfachen Block-Container.
+  //    Die Spalten werden jetzt untereinander gestapelt.
+  .kanban-board {
+    grid-template-columns: 1fr;
+    gap: 40px; // Mehr vertikaler Abstand zwischen den Status-Sektionen
+  }
+
+  // 2. Die Spalte selbst wird zu einer Sektion mit Titel.
+  .kanban-column {
+    background-color: transparent; // Der Hintergrund ist nicht mehr nötig
+  }
+
+  // 3. Der Spalten-Header wird anders gestylt.
+  .kanban-column-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  // 4. Der Container für die Karten.
+  .kanban-cards-container {
+    // 4a. Wir ändern das Layout von `flex-direction: column` zu `row`.
+    flex-direction: row; 
+    
+    // 4b. Wir erlauben horizontales Scrollen.
+    overflow-x: auto;
+    overflow-y: hidden; // Vertikales Scrollen wird hier deaktiviert
+
+    // 4c. Die Höhe wird entfernt und durch ein Padding ersetzt.
+    max-height: none;
+    // padding: 20px 0;
+
+    // 4d. Snap-Scrolling für ein besseres "Gefühl" beim Wischen (optional, aber empfohlen)
+    scroll-snap-type: x mandatory; 
+  }
+
+  // 5. Jede Karte wird zu einem "Snap-Punkt".
+  .application-card {
+    // 5a. Jede Karte soll nicht schrumpfen, damit sie ihre definierte Breite behält.
+    flex-shrink: 0; 
+    
+    // 5b. Wir geben jeder Karte eine feste Breite.
+    width: 280px;
+
+    // 5c. Definiert, wo die Karte beim "Snappen" landen soll.
+    scroll-snap-align: start;
+  }
+
+  // 6. Wir verstecken den "Leere Spalte"-Text, da das Layout jetzt anders ist.
+  .empty-column-text {
+    display: none;
+  }
+  
+  // 7. Wir passen den benutzerdefinierten Scrollbalken an, um horizontal zu funktionieren.
+  .kanban-cards-container {
+    // Firefox (horizontal)
+    scrollbar-color: #1a4a5b transparent;
+
+    // Webkit (horizontal)
+    &::-webkit-scrollbar {
+      height: 10px; // Höhe statt Breite
+    }
+
+    &::-webkit-scrollbar-thumb {
+      // Styling bleibt gleich
+      background-color: #1a4a5b;
+      border-radius: 20px;
+      border: 3px solid transparent;
+      background-clip: content-box;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: var(--primary-color-hover);
+    }
+  }
 }

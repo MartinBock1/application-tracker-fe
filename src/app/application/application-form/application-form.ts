@@ -15,8 +15,6 @@ import {
   CreateApplicationPayload,
 } from '../../models/api-interfaces';
 import { CommonModule } from '@angular/common';
-
-// HINZUGEFÜGT: Importiere unseren NotificationService
 import { NotificationService } from '../../services/notification';
 
 @Component({
@@ -26,13 +24,11 @@ import { NotificationService } from '../../services/notification';
   templateUrl: './application-form.html',
   styleUrl: './application-form.scss',
 })
-export class ApplicationForm implements OnInit { // OnInit hinzugefügt, da es verwendet wird
+export class ApplicationForm implements OnInit {
   private fb = inject(FormBuilder);
   private apiService = inject(Api);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-
-  // HINZUGEFÜGT: Injiziere den NotificationService
   private notificationService = inject(NotificationService);
 
   // Bestehende Eigenschaften bleiben unverändert

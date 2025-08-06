@@ -14,18 +14,24 @@
         
         <!-- Jobtitel, Firma, Status (bleiben unverändert) -->
         <div class="form-group">
-          <label for="job_title">Jobtitel</label>
+          <label for="job_title">
+            Jobtitel <span class="required-asterisk">*</span>
+          </label>
           <input id="job_title" type="text" formControlName="job_title" placeholder="z.B. Senior Frontend Developer" />
         </div>
         <div class="form-group">
-          <label for="company_id">Unternehmen</label>
+          <label for="company_id">
+            Unternehmen <span class="required-asterisk">*</span>
+          </label>
           <select id="company_id" formControlName="company_id">
             <option [ngValue]="null" disabled>Bitte Unternehmen auswählen</option>
             <option *ngFor="let company of companies" [ngValue]="company.id">{{ company.name }}</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="status">Status</label>
+          <label for="status">
+            Status ( bitte auswählen )
+          </label>
           <select id="status" formControlName="status">
             <option value="DRAFT">Entwurf</option>
             <option value="APPLIED">Beworben</option>
@@ -42,25 +48,33 @@
 
         <!-- Zeige "Beworben am", wenn der Status APPLIED ist -->
         <div class="form-group" *ngIf="applicationForm.get('status')?.value === 'APPLIED'">
-          <label for="applied_on">Beworben am</label>
+          <label for="applied_on">
+            Beworben am <span class="required-asterisk">*</span>
+          </label>
           <input id="applied_on" type="date" formControlName="applied_on" />
         </div>
 
         <!-- Zeige "Interview am", wenn der Status INTERVIEW ist -->
         <div class="form-group" *ngIf="applicationForm.get('status')?.value === 'INTERVIEW'">
-          <label for="interview_on">Interview am</label>
+          <label for="interview_on">
+            Interview am <span class="required-asterisk">*</span>
+          </label>
           <input id="interview_on" type="date" formControlName="interview_on" />
         </div>
 
         <!-- Zeige "Angebot erhalten am", wenn der Status OFFER ist -->
         <div class="form-group" *ngIf="applicationForm.get('status')?.value === 'OFFER'">
-          <label for="offer_on">Angebot erhalten am</label>
+          <label for="offer_on">
+            Angebot erhalten am <span class="required-asterisk">*</span>
+          </label>
           <input id="offer_on" type="date" formControlName="offer_on" />
         </div>
 
         <!-- Zeige "Abgelehnt am", wenn der Status REJECTED ist -->
         <div class="form-group" *ngIf="applicationForm.get('status')?.value === 'REJECTED'">
-          <label for="rejected_on">Abgelehnt am</label>
+          <label for="rejected_on">
+            Abgelehnt am <span class="required-asterisk">*</span>
+          </label>
           <input id="rejected_on" type="date" formControlName="rejected_on" />
         </div>
         

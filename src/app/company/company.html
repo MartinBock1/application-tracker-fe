@@ -6,7 +6,10 @@
       <legend>Firmendaten</legend>
 
       <div class="form-group">
-        <label for="company-name">Firmenname</label>
+        <!-- HINZUGEFÜGT: Sternchen im Label -->
+        <label for="company-name">
+          Firmenname <span class="required-asterisk">*</span>
+        </label>
         <input
           id="company-name"
           type="text"
@@ -25,7 +28,9 @@
       </div>
 
       <div class="form-group">
-        <label for="company-industry">Branche</label>
+        <label for="company-industry">
+          Branche <span class="required-asterisk">*</span>
+        </label>
         <input
           id="company-industry"
           type="text"
@@ -44,7 +49,7 @@
       </div>
 
       <div class="form-group">
-        <label for="company-website">Webseite</label>
+         <label for="company-website">Webseite (mit "https://")</label>
         <input
           id="company-website"
           type="url"
@@ -64,41 +69,17 @@
           id="contact-firstname"
           type="text"
           formControlName="first_name"
-        />
-        <div
-          *ngIf="
-            form.get('contact.first_name')?.invalid &&
-            form.get('contact.first_name')?.touched
-          "
-          class="error"
-        >
-          Vorname ist ein Pflichtfeld.
-        </div>
+        />        
       </div>
 
       <div class="form-group">
         <label for="contact-lastname">Nachname</label>
-        <input id="contact-lastname" type="text" formControlName="last_name" />
-        <div
-          *ngIf="
-            form.get('contact.last_name')?.invalid &&
-            form.get('contact.last_name')?.touched
-          "
-          class="error"
-        >
-          Nachname ist ein Pflichtfeld.
-        </div>
+        <input id="contact-lastname" type="text" formControlName="last_name" />        
       </div>
 
       <div class="form-group">
         <label for="contact-email">E-Mail</label>
-        <input id="contact-email" type="email" formControlName="email" />
-        <div
-          *ngIf="form.get('contact.email')?.touched && form.get('contact.email')?.errors?.['required']"
-          class="error"
-        >
-          E-Mail ist ein Pflichtfeld.
-        </div>
+        <input id="contact-email" type="email" formControlName="email" />        
         <div
           *ngIf="form.get('contact.email')?.touched && form.get('contact.email')?.errors?.['email']"
           class="error"

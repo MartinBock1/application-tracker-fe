@@ -1,34 +1,24 @@
 <div class="app-wrapper">
-  <nav class="main-nav" *ngIf="apiService.isLoggedIn()">
+  <nav class="main-nav" *ngIf="apiService.isLoggedIn()" [class.nav-open]="isMenuOpen()">
+    <button class="hamburger-button" (click)="toggleMenu()" aria-label="Toggle menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+
     <div class="nav-links">
-      <!-- Der routerLinkActive-Klasse wird automatisch von Angular gesetzt -->
-      <a
-        routerLink="/applications"
-        routerLinkActive="active-link"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="nav-button"
-      >
+      <a routerLink="/applications" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }" class="nav-button" (click)="closeMenu()">
         Meine Bewerbungen
       </a>
-
-      <a
-        routerLink="/applications/new"
-        routerLinkActive="active-link"
-        class="nav-button"
-      >
+      <a routerLink="/applications/new" routerLinkActive="active-link" class="nav-button" (click)="closeMenu()">
         Neue Bewerbung
       </a>
-      <a
-        routerLink="/companies/new"
-        routerLinkActive="active-link"
-        class="nav-button"
-      >
+      <a routerLink="/companies/new" routerLinkActive="active-link" class="nav-button" (click)="closeMenu()">
         Neue Firma
       </a>
     </div>
 
     <div class="nav-actions">
-      <!-- Der Logout-Button bekommt eine extra Klasse für separates Styling -->
       <button (click)="logout()" class="nav-button nav-button--logout">
         Logout
       </button>
@@ -36,8 +26,6 @@
   </nav>
 </div>
 
-<!-- Der Hauptinhalt deiner Anwendung rückt unter die Navigation -->
 <main class="main-content">
-  <!-- Der Router rendert hier die Komponenten -->
   <router-outlet></router-outlet>
 </main>

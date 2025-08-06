@@ -115,3 +115,13 @@
     }
   }
 }
+
+/* ==========================================================================
+   Responsive Styles für Formulare
+   ========================================================================== */
+@media (max-width: 576px) {
+  .auth-card {
+    // Weniger Padding auf sehr kleinen Bildschirmen
+    padding: 30px 20px;
+  }
+}

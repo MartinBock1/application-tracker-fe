@@ -70,3 +70,62 @@ a {
 .main-content {
   padding: 20px 40px;
 }
+
+// Zuerst der Hamburger-Button, der standardmäßig versteckt ist
+.hamburger-button {
+  display: none; // Auf dem Desktop unsichtbar
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 10px;
+  z-index: 1001; // Stellt sicher, dass er über anderen Elementen liegt
+}
+
+// Media Query für Tablets und mobile Geräte (alles unter 768px Breite)
+@media (max-width: 768px) {
+  .main-nav {
+    padding: 12px 20px;
+  }
+
+  .main-content {
+    padding: 20px 15px; // Weniger seitlicher Abstand auf schmalen Bildschirmen
+  }
+
+  .hamburger-button {
+    display: block; // Hamburger-Button anzeigen
+  }
+
+  .nav-links {
+    // Das Menü als ausfahrbare Seitenleiste positionieren
+    position: fixed;
+    top: 0;
+    left: -100%; // Standardmäßig außerhalb des Bildschirms
+    width: 280px;
+    height: 100%;
+    background-color: var(--card-background-color);
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 80px 20px 20px;
+    gap: 10px;
+    transition: left 0.3s ease-in-out;
+    box-shadow: 4px 0px 15px rgba(0,0,0,0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+  }
+
+  // Wenn das Menü offen ist, wird es in den sichtbaren Bereich geschoben
+  .main-nav.nav-open .nav-links {
+    left: 0;
+  }
+
+  // Die Links im mobilen Menü
+  .nav-links .nav-button {
+    width: 80%;
+    text-align: left;
+  }
+
+  .nav-actions {
+    margin-left: auto; // Logout-Button nach rechts schieben
+  }
+}

@@ -1,5 +1,3 @@
-@import 'ngx-toastr/toastr';
-
 /* You can add global styles to this file, and also import other style files */
 /* roboto-300 - latin_latin-ext */
 @font-face {
@@ -45,8 +43,41 @@ body {
   font-family: 'Roboto', sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
+
+  // --- Für Firefox ---
+  // Definiert die Daumen-Farbe (der bewegliche Teil) und die Track-Farbe (der Hintergrund).
+  scrollbar-width: thin; // Macht den Scrollbalken schmaler
+  scrollbar-color: #1a4a5b transparent;
+
+
+  // --- Für Chrome, Safari, Edge und andere WebKit-Browser ---
+
+  // Definiert die Breite des gesamten Scrollbalkens
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  // Definiert den Hintergrund (die "Schiene"), auf der sich der Scrollbalken bewegt
+  &::-webkit-scrollbar-track {
+    background: transparent; // Wir machen den Hintergrund unsichtbar
+  }
 }
 
 a {
     cursor: pointer;
+}
+
+.required-asterisk {
+  color: #d9534f; // Ein auffälliges Rot
+  font-weight: bold;
+  margin-left: 4px;
+}
+
+/* ==========================================================================
+   NEU: Globales Cursor-Styling für alle Formularfelder
+   ========================================================================== */
+input,
+select,
+textarea {
+  cursor: pointer;
 }

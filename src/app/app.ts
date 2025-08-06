@@ -19,6 +19,7 @@ import { Company } from './models/api-interfaces';
 export class App {
   protected readonly title = signal('application-tracker-fe');
   companies: Company[] = [];
+  isMenuOpen = signal(false);
 
   public apiService = inject(Api);
   private router = inject(Router);
@@ -36,9 +37,18 @@ export class App {
     });
   }
 
+  toggleMenu(): void {
+    this.isMenuOpen.set(!this.isMenuOpen());
+  }
+
+   closeMenu(): void {
+    this.isMenuOpen.set(false);
+  }
+
   logout(): void {
-    this.apiService.logout(); // Ruft die Logout-Logik im Service auf
-    this.router.navigate(['/login']); // Leitet den Benutzer zur Login-Seite
+    this.apiService.logout();
+    this.router.navigate(['/login']);
+    this.closeMenu();
     console.log('Erfolgreich ausgeloggt.');
   }
 }

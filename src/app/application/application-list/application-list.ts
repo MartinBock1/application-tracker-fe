@@ -29,6 +29,7 @@ export class ApplicationList implements OnInit {
   public groupedApplications: { [key: string]: Application[] } = {};
   public isLoading = true;
   public errorMessage: string | null = null;
+  public dueFollowUpsCount = 0;
 
   ngOnInit(): void {
     this.loadApplications();
@@ -39,8 +40,14 @@ export class ApplicationList implements OnInit {
     this.errorMessage = null;
     this.apiService.getApplications().subscribe({
       next: (data) => {
+        // Sortiere das Array, bevor es verwendet wird.
+        // `new Date(b.created_at).getTime() - new Date(a.created_at).getTime()`
+        // sortiert die Daten absteigend (neueste zuerst).
+        data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
         this.allApplications = data;
         this.updateGroupedApplications();
+        this.calculateDueFollowUps(); 
         this.isLoading = false;
       },
       error: (err) => {
@@ -62,6 +69,11 @@ export class ApplicationList implements OnInit {
         this.groupedApplications[app.status].push(app);
       }
     }
+  }
+
+  private calculateDueFollowUps(): void {
+    const dueApps = this.allApplications.filter(app => this.isFollowUpDue(app.follow_up_on));
+    this.dueFollowUpsCount = dueApps.length;
   }
   
   public isFollowUpDue(dateString: string | null): boolean {
