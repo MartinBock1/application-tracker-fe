@@ -67,6 +67,17 @@ a {
     cursor: pointer;
 }
 
+/* ==========================================================================
+   Styling für den Pflichtfeld-Hinweis
+   ========================================================================== */
+.required-fields-notice {
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7); // Nicht ganz weiß, um dezenter zu sein
+  margin-bottom: 20px; // Abstand zur Formular-Karte
+  margin-top: -10px; // Etwas näher an die Überschrift rücken
+}
+
 .required-asterisk {
   color: #d9534f; // Ein auffälliges Rot
   font-weight: bold;

@@ -7,6 +7,9 @@
     <p class="subtitle" *ngIf="!isEditMode">
       Fülle die Details deiner Bewerbung aus.
     </p>
+    <p class="required-fields-notice">
+    Felder mit einem <span class="required-asterisk">*</span> sind Pflichtfelder.
+  </p>
 
     <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
       <fieldset>

@@ -1,5 +1,8 @@
 <div class="auth-container">
-  <h2>Neue Firma und Kontakt anlegen</h2>
+  <h2>Neue Firma und optionalen Kontakt anlegen</h2>
+  <p class="required-fields-notice">
+    Felder mit einem <span class="required-asterisk">*</span> sind Pflichtfelder.
+  </p>
   <form [formGroup]="form" (ngSubmit)="submit()" class="auth-card">
     <!-- Sektion für die Firma -->
     <fieldset formGroupName="company">
