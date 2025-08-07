@@ -103,6 +103,6 @@ export interface CreateApplicationPayload {
 }
 
 export interface CreateNotePayload {
-  application: number; // Die ID der Bewerbung, zu der die Notiz gehört
+  application: number;
   text: string;
 }
