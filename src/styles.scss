@@ -28,9 +28,7 @@
 :root {
   --primary-color: #00ff2a85;
   --primary-color-hover: #00d423;
-  // --background-color: #f4f7f6;
   --background-color: #05171e;
-  // --card-background-color: #ffffff;
   --card-background-color: #0d3340;
   --text-color: #fefefe;
   --input-border-color: #ccc;
@@ -39,7 +37,6 @@
 
 body {
   margin: 0;
-  // Hier wird jetzt die LOKAL definierte Schriftart 'Roboto' verwendet.
   font-family: 'Roboto', sans-serif;
   background-color: var(--background-color);
   color: var(--text-color);
@@ -48,6 +45,8 @@ body {
   // Definiert die Daumen-Farbe (der bewegliche Teil) und die Track-Farbe (der Hintergrund).
   scrollbar-width: thin; // Macht den Scrollbalken schmaler
   scrollbar-color: #1a4a5b transparent;
+
+  border: 1py solid yellow;
 
 
   // --- Für Chrome, Safari, Edge und andere WebKit-Browser ---

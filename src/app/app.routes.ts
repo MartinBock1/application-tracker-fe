@@ -5,6 +5,8 @@ import { ApplicationForm } from './application/application-form/application-form
 import { ApplicationList } from './application/application-list/application-list';
 import { CompanyFormComponent } from './company/company';
 import { authGuard } from './auth/auth-guard';
+import { Imprint } from './shared/imprint/imprint';
+import { LegalNotice } from './shared/legal-notice/legal-notice';
 
 /**
  * Application routing configuration.
@@ -59,6 +61,8 @@ export const routes: Routes = [
     component: Registration, 
     title: 'Registrierung' 
   },
+  { path: 'imprint', component: Imprint },
+  { path: 'legal-notice', component: LegalNotice },
 
   // ============================================================================
   // PROTECTED ROUTES - Authentication required via authGuard

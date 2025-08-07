@@ -1,6 +1,11 @@
 // Verwende die globalen Variablen aus styles.scss
 @use '../styles.scss' as *;
 
+:host {
+  display: block; // Standard-Blockverhalten
+  height: 100%; // Wichtig, damit der Wrapper sich daran orientieren kann
+}
+
 /* ==========================================================================
    Globaler App-Wrapper für Breitenbegrenzung
    ========================================================================== */
@@ -8,6 +13,15 @@
   max-width: 1920px;
   margin: 0 auto;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+// Sorgen dafür, dass der Hauptinhalt nicht von der Navigationsleiste verdeckt wird.
+.main-content {
+  padding: 20px 40px;
+  flex: 1;
 }
 
 .main-nav {
@@ -64,11 +78,6 @@ a {
     background-color: #d9534f;
     color: white;
   }
-}
-
-// Sorgen dafür, dass der Hauptinhalt nicht von der Navigationsleiste verdeckt wird.
-.main-content {
-  padding: 20px 40px;
 }
 
 // Zuerst der Hamburger-Button, der standardmäßig versteckt ist

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { Api } from './services/api';
 import { Company } from './models/api-interfaces';
+import { FooterComponent } from './shared/footer/footer';
 
 /**
  * Root application component for the Job Application Tracker.
@@ -30,7 +31,8 @@ import { Company } from './models/api-interfaces';
     CommonModule, 
     RouterOutlet,
     RouterLink,
-    RouterLinkActive
+    RouterLinkActive,
+    FooterComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
