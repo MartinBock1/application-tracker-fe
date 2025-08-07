@@ -1,40 +1,63 @@
 <div class="auth-container">
   <div class="auth-card">
+    <!-- Dynamic header based on edit mode -->
     <h2>
       {{ isEditMode ? "Bewerbung bearbeiten" : "Neue Bewerbung erstellen" }}
     </h2>
-
-    <p class="subtitle" *ngIf="!isEditMode">
-      Fülle die Details deiner Bewerbung aus.
+    
+    <!-- Show subtitle only for new applications -->
+    @if(!isEditMode) {
+    <p class="subtitle">
+      Bitte fülle die folgenden Informationen aus, um eine neue Bewerbung zu
+      erstellen.
     </p>
+    }
+    
+    <!-- Required fields notice -->
     <p class="required-fields-notice">
-    Felder mit einem <span class="required-asterisk">*</span> sind Pflichtfelder.
-  </p>
+      Felder mit einem <span class="required-asterisk">*</span> sind
+      Pflichtfelder.
+    </p>
 
+    <!-- Main application form with reactive form binding -->
     <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
       <fieldset>
         <legend>Bewerbungsdetails</legend>
-        
-        <!-- Jobtitel, Firma, Status (bleiben unverändert) -->
+
+        <!-- Job title input field -->
         <div class="form-group">
           <label for="job_title">
             Jobtitel <span class="required-asterisk">*</span>
           </label>
-          <input id="job_title" type="text" formControlName="job_title" placeholder="z.B. Senior Frontend Developer" />
+          <input
+            id="job_title"
+            type="text"
+            formControlName="job_title"
+            placeholder="z.B. Senior Frontend Developer"
+          />
         </div>
+        
+        <!-- Company selection dropdown -->
         <div class="form-group">
           <label for="company_id">
             Unternehmen <span class="required-asterisk">*</span>
           </label>
           <select id="company_id" formControlName="company_id">
-            <option [ngValue]="null" disabled>Bitte Unternehmen auswählen</option>
-            <option *ngFor="let company of companies" [ngValue]="company.id">{{ company.name }}</option>
+            <option [ngValue]="null" disabled>
+              Bitte Unternehmen auswählen
+            </option>
+            <!-- Loop through available companies -->
+            @for(company of companies; track company.id) {
+            <option [ngValue]="company.id">
+              {{ company.name }}
+            </option>
+            }
           </select>
         </div>
+        
+        <!-- Application status selection -->
         <div class="form-group">
-          <label for="status">
-            Status ( bitte auswählen )
-          </label>
+          <label for="status"> Status ( bitte auswählen ) </label>
           <select id="status" formControlName="status">
             <option value="DRAFT">Entwurf</option>
             <option value="APPLIED">Beworben</option>
@@ -46,68 +69,105 @@
         </div>
 
         <!-- ======================================================== -->
-        <!-- HIER BEGINNT DER NEUE, DYNAMISCHE DATUMS-BLOCK           -->
+        <!-- DYNAMIC DATE FIELDS SECTION - Shows relevant dates based on status -->
         <!-- ======================================================== -->
 
-        <!-- Zeige "Beworben am", wenn der Status APPLIED ist -->
-        <div class="form-group" *ngIf="applicationForm.get('status')?.value === 'APPLIED'">
+        <!-- Show "Applied on" date when status is APPLIED -->
+        @if(applicationForm.get('status')?.value === 'APPLIED') {
+        <div class="form-group">
           <label for="applied_on">
             Beworben am <span class="required-asterisk">*</span>
           </label>
           <input id="applied_on" type="date" formControlName="applied_on" />
         </div>
+        }
 
-        <!-- Zeige "Interview am", wenn der Status INTERVIEW ist -->
-        <div class="form-group" *ngIf="applicationForm.get('status')?.value === 'INTERVIEW'">
+        <!-- Show "Interview on" date when status is INTERVIEW -->
+        @if(applicationForm.get('status')?.value === 'INTERVIEW') {
+        <div class="form-group">
           <label for="interview_on">
             Interview am <span class="required-asterisk">*</span>
           </label>
           <input id="interview_on" type="date" formControlName="interview_on" />
         </div>
+        }
 
-        <!-- Zeige "Angebot erhalten am", wenn der Status OFFER ist -->
-        <div class="form-group" *ngIf="applicationForm.get('status')?.value === 'OFFER'">
+        <!-- Show "Offer received on" date when status is OFFER -->
+        @if(applicationForm.get('status')?.value === 'OFFER') {
+        <div class="form-group">
           <label for="offer_on">
             Angebot erhalten am <span class="required-asterisk">*</span>
           </label>
           <input id="offer_on" type="date" formControlName="offer_on" />
         </div>
+        }
 
-        <!-- Zeige "Abgelehnt am", wenn der Status REJECTED ist -->
-        <div class="form-group" *ngIf="applicationForm.get('status')?.value === 'REJECTED'">
+        <!-- Show "Rejected on" date when status is REJECTED -->
+        @if(applicationForm.get('status')?.value === 'REJECTED') {
+        <div class="form-group">
           <label for="rejected_on">
             Abgelehnt am <span class="required-asterisk">*</span>
           </label>
           <input id="rejected_on" type="date" formControlName="rejected_on" />
         </div>
-        
-        <!-- Optional: Ein Feld für das Nachhaken, das immer angezeigt werden kann -->
+        }
+
+        <!-- Optional follow-up date field - always visible -->
         <div class="form-group">
           <label for="follow_up_on">Nachhaken am</label>
           <input id="follow_up_on" type="date" formControlName="follow_up_on" />
         </div>
-
       </fieldset>
 
-      <!-- Notiz-Sektion (bleibt unverändert, ist bereits korrekt) -->
-      <fieldset *ngIf="isEditMode" class="notes-fieldset">
+      <!-- Notes section - only shown in edit mode -->
+      @if(isEditMode) {
+      <fieldset class="notes-fieldset">
         <legend>Notizen</legend>
         <div formArrayName="notes" class="notes-container">
-          <p *ngIf="notes.length === 0" class="no-notes-info">Noch keine Notizen hinzugefügt.</p>
-          <div *ngFor="let note of notes.controls; let i = index" [formGroupName]="i" class="note-item">
-            <textarea formControlName="text" placeholder="Ihre Notiz..."></textarea>
-            <button type="button" (click)="onDeleteNote(i)" class="btn-remove-note" title="Notiz entfernen">×</button>
+          <!-- Show message when no notes exist -->
+          @if(notes.length === 0) {
+          <p class="no-notes-info">Noch keine Notizen hinzugefügt.</p>
+          } 
+          
+          <!-- Loop through existing notes -->
+          @for(note of notes.controls; track notes; let i = $index) {
+          <div [formGroupName]="i" class="note-item">
+            <textarea
+              formControlName="text"
+              placeholder="Ihre Notiz..."
+            ></textarea>
+            <!-- Remove note button -->
+            <button
+              type="button"
+              (click)="onDeleteNote(i)"
+              class="btn-remove-note"
+              title="Notiz entfernen"
+            >
+              x
+            </button>
           </div>
+          }
         </div>
-        <button type="button" (click)="onAddNote()" class="btn-add-note">+ Neue Notiz hinzufügen</button>
+        <!-- Add new note button -->
+        <button type="button" (click)="onAddNote()" class="btn-add-note">
+          + Neue Notiz hinzufügen
+        </button>
       </fieldset>
-
+      }
+      
       <br />
-      <button type="submit" class="btn btn-primary" [disabled]="applicationForm.invalid">
+      
+      <!-- Submit button with dynamic text and disabled state -->
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="applicationForm.invalid"
+      >
         {{ isEditMode ? "Änderungen speichern" : "Bewerbung erstellen" }}
       </button>
     </form>
 
+    <!-- Navigation back to applications list -->
     <div class="switch-auth-link">
       <a routerLink="/applications">Zurück zur Übersicht</a>
     </div>
