@@ -5,26 +5,27 @@
   margin-top: 2rem;
   text-align: center;
   font-size: 0.9rem;
-  color: #6c757d;
+  color: var(--text-color);
 }
 
 .footer-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
+  justify-content: center; // Center footer links horizontally
+  align-items: center;     // Center footer links vertically
+  gap: 1rem;              // Space between footer elements
 }
 
 .footer-link {
   color: var(--text-color);
   text-decoration: none;
-  transition: text-decoration 0.2s;
+  transition: text-decoration 0.2s; // Smooth hover transition
 
+  // Hover state for better user interaction feedback
   &:hover {
     text-decoration: underline;
   }
 }
 
 .separator {
-  color: var(----text-color);
+  color: var(--text-color); // Fixed typo: removed extra dashes
 }

@@ -1,13 +1,13 @@
-// Verwende die globalen Variablen aus styles.scss
+// Use global variables from styles.scss
 @use '../styles.scss' as *;
 
 :host {
-  display: block; // Standard-Blockverhalten
-  height: 100%; // Wichtig, damit der Wrapper sich daran orientieren kann
+  display: block; // Standard block behavior
+  height: 100%; // Important for wrapper to orient correctly
 }
 
 /* ==========================================================================
-   Globaler App-Wrapper für Breitenbegrenzung
+   Global App Wrapper for Width Limitation
    ========================================================================== */
 .app-wrapper {
   max-width: 1920px;
@@ -18,7 +18,7 @@
   min-height: 100vh;
 }
 
-// Sorgen dafür, dass der Hauptinhalt nicht von der Navigationsleiste verdeckt wird.
+// Ensures main content is not covered by navigation bar
 .main-content {
   padding: 20px 40px;
   flex: 1;
@@ -39,7 +39,7 @@
   gap: 15px;
 }
 
-// Basis-Styling für alle Navigations-Buttons
+// Base styling for all navigation buttons
 .nav-button {
   display: inline-block;
   padding: 10px 20px;
@@ -55,7 +55,7 @@
   color: var(--text-color);
 
   &:hover {
-    background-color:var(--primary-color-hover);
+    background-color: var(--primary-color-hover);
   }
 }
 
@@ -69,7 +69,7 @@ a {
   }
 }
 
-// Spezielles Styling für den Logout-Button
+// Special styling for the logout button
 .nav-button--logout {
   border-color: #d9534f;
   color: #d9534f;
@@ -80,36 +80,36 @@ a {
   }
 }
 
-// Zuerst der Hamburger-Button, der standardmäßig versteckt ist
+// First the hamburger button, which is hidden by default
 .hamburger-button {
-  display: none; // Auf dem Desktop unsichtbar
+  display: none; // Invisible on desktop
   background: none;
   border: none;
   color: var(--text-color);
   cursor: pointer;
   padding: 10px;
-  z-index: 1001; // Stellt sicher, dass er über anderen Elementen liegt
+  z-index: 1001; // Ensures it appears above other elements
 }
 
-// Media Query für Tablets und mobile Geräte (alles unter 768px Breite)
+// Media query for tablets and mobile devices (everything under 768px width)
 @media (max-width: 768px) {
   .main-nav {
     padding: 12px 20px;
   }
 
   .main-content {
-    padding: 20px 15px; // Weniger seitlicher Abstand auf schmalen Bildschirmen
+    padding: 20px 15px; // Less side padding on narrow screens
   }
 
   .hamburger-button {
-    display: block; // Hamburger-Button anzeigen
+    display: block; // Show hamburger button
   }
 
   .nav-links {
-    // Das Menü als ausfahrbare Seitenleiste positionieren
+    // Position the menu as a slide-out sidebar
     position: fixed;
     top: 0;
-    left: -100%; // Standardmäßig außerhalb des Bildschirms
+    left: -100%; // Initially off-screen
     width: 280px;
     height: 100%;
     background-color: var(--card-background-color);
@@ -123,18 +123,18 @@ a {
     z-index: 1000;
   }
 
-  // Wenn das Menü offen ist, wird es in den sichtbaren Bereich geschoben
+  // When the menu is open, it slides into the visible area
   .main-nav.nav-open .nav-links {
     left: 0;
   }
 
-  // Die Links im mobilen Menü
+  // Links in the mobile menu
   .nav-links .nav-button {
     width: 80%;
     text-align: left;
   }
 
   .nav-actions {
-    margin-left: auto; // Logout-Button nach rechts schieben
+    margin-left: auto; // Push logout button to the right
   }
 }
