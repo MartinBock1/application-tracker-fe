@@ -1,15 +1,24 @@
 <div class="auth-container">
+  <!-- Page header with descriptive title -->
   <h2>Neue Firma und optionalen Kontakt anlegen</h2>
+  
+  <!-- Required fields notice for user guidance -->
   <p class="required-fields-notice">
-    Felder mit einem <span class="required-asterisk">*</span> sind Pflichtfelder.
+    Felder mit einem <span class="required-asterisk">*</span> sind
+    Pflichtfelder.
   </p>
+  
+  <!-- Main form with reactive form binding and submit handler -->
   <form [formGroup]="form" (ngSubmit)="submit()" class="auth-card">
-    <!-- Sektion für die Firma -->
+    
+    <!-- ======================================================== -->
+    <!-- COMPANY DATA SECTION -->
+    <!-- ======================================================== -->
     <fieldset formGroupName="company">
       <legend>Firmendaten</legend>
 
+      <!-- Company name input - required field -->
       <div class="form-group">
-        <!-- HINZUGEFÜGT: Sternchen im Label -->
         <label for="company-name">
           Firmenname <span class="required-asterisk">*</span>
         </label>
@@ -19,17 +28,14 @@
           formControlName="name"
           placeholder="z.B. Tech Solutions GmbH"
         />
-        <div
-          *ngIf="
-            form.get('company.name')?.invalid &&
-            form.get('company.name')?.touched
-          "
-          class="error"
-        >
-          Firmenname ist ein Pflichtfeld.
-        </div>
+        <!-- Validation error message for company name -->
+        @if (form.get('company.name')?.invalid &&
+        form.get('company.name')?.touched) {
+        <div class="error">Firmenname ist ein Pflichtfeld.</div>
+        }
       </div>
 
+      <!-- Industry input - required field -->
       <div class="form-group">
         <label for="company-industry">
           Branche <span class="required-asterisk">*</span>
@@ -40,19 +46,16 @@
           formControlName="industry"
           placeholder="z.B. Informationstechnologie"
         />
-        <div
-          *ngIf="
-            form.get('company.industry')?.invalid &&
-            form.get('company.industry')?.touched
-          "
-          class="error"
-        >
-          Branche ist ein Pflichtfeld.
-        </div>
+        <!-- Validation error message for industry -->
+        @if (form.get('company.industry')?.invalid &&
+        form.get('company.industry')?.touched) {
+        <div class="error">Branche ist ein Pflichtfeld.</div>
+        }
       </div>
 
+      <!-- Website input - optional field with URL validation -->
       <div class="form-group">
-         <label for="company-website">Webseite (mit "https://")</label>
+        <label for="company-website">Webseite (mit "https://")</label>
         <input
           id="company-website"
           type="url"
@@ -62,35 +65,42 @@
       </div>
     </fieldset>
 
-    <!-- Sektion für die Kontaktperson -->
+    <!-- ======================================================== -->
+    <!-- CONTACT PERSON SECTION - All fields optional -->
+    <!-- ======================================================== -->
     <fieldset formGroupName="contact">
       <legend>Kontaktperson</legend>
 
+      <!-- Contact person first name -->
       <div class="form-group">
         <label for="contact-firstname">Vorname</label>
         <input
           id="contact-firstname"
           type="text"
           formControlName="first_name"
-        />        
+        />
       </div>
 
+      <!-- Contact person last name -->
       <div class="form-group">
         <label for="contact-lastname">Nachname</label>
-        <input id="contact-lastname" type="text" formControlName="last_name" />        
+        <input id="contact-lastname" type="text" formControlName="last_name" />
       </div>
 
+      <!-- Contact person email with validation -->
       <div class="form-group">
         <label for="contact-email">E-Mail</label>
-        <input id="contact-email" type="email" formControlName="email" />        
-        <div
-          *ngIf="form.get('contact.email')?.touched && form.get('contact.email')?.errors?.['email']"
-          class="error"
-        >
+        <input id="contact-email" type="email" formControlName="email" />
+        <!-- Email format validation error message -->
+        @if (form.get('contact.email')?.touched &&
+        form.get('contact.email')?.errors?.['email']) {
+        <div class="error">
           Bitte geben Sie eine gültige E-Mail-Adresse ein.
         </div>
+        }
       </div>
 
+      <!-- Contact person position/job title -->
       <div class="form-group">
         <label for="contact-position">Position</label>
         <input
@@ -101,12 +111,14 @@
         />
       </div>
 
+      <!-- Contact person phone number -->
       <div class="form-group">
         <label for="contact-phone">Telefon</label>
         <input id="contact-phone" type="tel" formControlName="phone" />
       </div>
     </fieldset>
 
+    <!-- Form submission button - disabled when form is invalid -->
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
         Firma & Kontakt speichern

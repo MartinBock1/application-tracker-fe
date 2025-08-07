@@ -15,6 +15,23 @@ import {
 } from '../models/api-interfaces';
 import { NotificationService } from '../services/notification';
 
+/**
+ * Component for creating new companies with optional contact persons.
+ *
+ * This component provides a reactive form that allows users to create a company
+ * and optionally add a contact person. It handles validation, API calls,
+ * and provides user feedback through notifications.
+ *
+ * @example
+ * ```html
+ * <app-company-form></app-company-form>
+ * ```
+ *
+ * @remarks
+ * The component supports two creation scenarios:
+ * 1. Company only - when contact fields are empty
+ * 2. Company with contact - when contact name fields are provided
+ */
 @Component({
   selector: 'app-company-form',
   standalone: true,
@@ -23,12 +40,25 @@ import { NotificationService } from '../services/notification';
   styleUrls: ['./company.scss'],
 })
 export class CompanyFormComponent {
+  // Dependency injection using Angular's inject function
   private fb = inject(FormBuilder);
   private api = inject(Api);
   private router = inject(Router);
   private notificationService = inject(NotificationService);
 
-  // Formular mit angepassten Validatoren
+  /**
+   * Reactive form for company and contact data.
+   *
+   * The form is structured with two nested form groups:
+   * - company: Contains required company information (name, industry) and optional website
+   * - contact: Contains optional contact person details with email validation
+   *
+   * @remarks
+   * Form validation rules:
+   * - Company name and industry are required
+   * - Contact email must be valid format if provided
+   * - Contact creation requires both first_name and last_name
+   */
   form: FormGroup = this.fb.group({
     company: this.fb.group({
       name: ['', Validators.required],
@@ -44,7 +74,33 @@ export class CompanyFormComponent {
     }),
   });
 
+  /**
+   * Handles form submission for creating company and optional contact.
+   *
+   * This method validates the form, determines whether to create a contact person,
+   * and executes the appropriate API calls. It uses RxJS operators for chaining
+   * dependent API calls when both company and contact need to be created.
+   *
+   * @remarks
+   * The submission process follows these steps:
+   * 1. Validates form data and shows validation errors if invalid
+   * 2. Extracts company and contact data from form
+   * 3. Determines if contact should be created (requires first and last name)
+   * 4. Executes API calls:
+   *    - Company only: Single createCompany call
+   *    - Company with contact: createCompany followed by createContact using switchMap
+   * 5. Handles success/error cases with notifications and navigation
+   *
+   * @throws Will display error notification if API calls fail
+   *
+   * @example
+   * ```typescript
+   * // Called when user submits the form
+   * submit(); // Validates and creates company/contact
+   * ```
+   */
   submit() {
+    // Validate form before submission
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.notificationService.showWarning(
@@ -54,24 +110,29 @@ export class CompanyFormComponent {
       return;
     }
 
+    // Extract form data for API payloads
     const companyPayload: CreateCompanyPayload =
       this.form.get('company')?.value;
     const contactData = this.form.get('contact')?.value;
 
-    // Prüfen, ob Kontaktdaten (mindestens Vor- und Nachname) eingegeben wurden.
-    // Das Backend erfordert diese Felder für einen Kontakt.
+    // Check if contact data should be created (requires first and last name)
+    // The backend requires these fields for contact creation
     const shouldCreateContact = contactData.first_name && contactData.last_name;
 
     if (shouldCreateContact) {
-      // RxJS-Magie:
-      // 1. Zuerst die Firma erstellen.
-      // 2. Mit switchMap auf die Antwort warten und die neue Firmen-ID verwenden,
-      //    um den Kontakt zu erstellen.
-      // Fall 1: Firma UND Kontakt erstellen
+      /**
+       * SCENARIO 1: Create company AND contact
+       *
+       * Uses RxJS magic:
+       * 1. First create the company
+       * 2. Use switchMap to wait for response and use the new company ID
+       *    to create the contact
+       */
       this.api
         .createCompany(companyPayload)
         .pipe(
           switchMap((newCompany) => {
+            // Prepare contact payload with the newly created company ID
             const contactPayload: CreateContactPayload = {
               ...contactData,
               company_id: newCompany.id,
@@ -92,11 +153,15 @@ export class CompanyFormComponent {
               'Ein Fehler ist aufgetreten. Bitte prüfen Sie die Eingaben und Ihre Verbindung.',
               'Speichern fehlgeschlagen'
             );
-            console.error('Fehler beim Erstellen von Firma/Kontakt:', err);
+            console.error('Error creating company/contact:', err);
           },
         });
     } else {
-      // Fall 2: NUR Firma erstellen
+      /**
+       * SCENARIO 2: Create company ONLY
+       *
+       * Simple single API call when no contact person is provided
+       */
       this.api.createCompany(companyPayload).subscribe({
         next: (newCompany) => {
           this.notificationService.showSuccess(
@@ -110,7 +175,7 @@ export class CompanyFormComponent {
             'Die Firma konnte nicht erstellt werden.',
             'Speichern fehlgeschlagen'
           );
-          console.error('Fehler beim Erstellen der Firma:', err);
+          console.error('Error creating company:', err);
         },
       });
     }
