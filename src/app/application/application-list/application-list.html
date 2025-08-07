@@ -2,80 +2,100 @@
   <header class="list-header">
     <div class="list-title-wrapper">
       <h2>Meine Bewerbungen</h2>
-      <span *ngIf="dueFollowUpsCount > 0" class="follow-up-indicator">
+      <!-- Show follow-up indicator if there are due follow-ups -->
+      @if(dueFollowUpsCount > 0) {
+      <span class="follow-up-indicator">
         {{ dueFollowUpsCount }} Wiedervorlage fällig!
       </span>
+      }
     </div>
   </header>
 
-  <!-- Lade-Spinner anzeigen, während die Daten geholt werden -->
-  <div *ngIf="isLoading" class="loading-indicator">
+  <!-- Display loading spinner while fetching data -->
+  @if(isLoading) {
+  <div class="loading-indicator">
     <div class="spinner"></div>
     <p>Lade Bewerbungen...</p>
   </div>
+  }
 
-  <!-- Fehlermeldung anzeigen, falls ein Fehler auftritt -->
-  <div *ngIf="errorMessage" class="error-message">
+  <!-- Display error message if an error occurs -->
+  @if(errorMessage) {
+  <div class="error-message">
     {{ errorMessage }}
   </div>
+  } 
+  
+  <!-- Main content area - only show when not loading and no error -->
+  @if(!isLoading && !errorMessage) {
 
-   <div *ngIf="!isLoading && !errorMessage">
-    <!-- Fall 1: Keine Bewerbungen -> Zeige eine "Leer"-Nachricht an -->
-    <div *ngIf="allApplications.length === 0; else kanbanBoard" class="empty-state">
+  <!-- Case 1: No applications -> Show empty state message -->
+  @if (allApplications.length === 0) {
+    <div class="empty-state">
       <h3>Noch keine Bewerbungen erfasst.</h3>
       <p>Klicke auf "Neue Bewerbung", um deine erste Bewerbung hinzuzufügen.</p>
     </div>
-
-    <!-- Fall 2: Es gibt Bewerbungen -> Zeige das Kanban-Board an -->
-    <ng-template #kanbanBoard>
-      <div class="kanban-board-container">
-        <div class="kanban-board">
-          
-          <!-- Wir iterieren über die 'statusOrder'-Liste, um die Spalten zu erstellen -->
-          <div *ngFor="let status of statusOrder" class="kanban-column">
-            
-            <!-- Spalten-Header -->
+  } @else {
+    <!-- Case 2: Applications exist -> Show Kanban board -->
+    <div class="kanban-board-container">
+      <div class="kanban-board">
+        <!-- Iterate over 'statusOrder' list to create columns -->
+        @for (status of statusOrder; track status) {
+          <div class="kanban-column">
+            <!-- Column header with status title and application count -->
             <header class="kanban-column-header">
               <h3>{{ statusTitleMap[status] }}</h3>
               <span class="card-count">{{ groupedApplications[status].length }}</span>
             </header>
-
-            <!-- Spalten-Inhalt mit den Karten -->
             <div class="kanban-cards-container">
-              <p *ngIf="groupedApplications[status].length === 0" class="empty-column-text">Keine Bewerbungen</p>
+              <!-- Show empty message if no applications in this status -->
+              @if (groupedApplications[status].length === 0) {
+                <p class="empty-column-text">Keine Bewerbungen</p>
+              }
 
-              <!-- Die *ngFor-Schleife für die Karten. Die Karte selbst ist unverändert! -->
-              <div *ngFor="let app of groupedApplications[status]" 
-                   class="application-card" 
-                   [class.follow-up-due]="isFollowUpDue(app.follow_up_on)">
-                
-                <!-- HIER BEGINNT DER RECYCELTE KARTEN-CODE -->
-                <h3>{{ app.job_title }}</h3>
-                <p class="company-name">{{ app.company.name }}</p>
-                <div class="details">
-                  <span class="status-badge" [ngClass]="'status-' + app.status">
-                    {{ app.status_display }}
-                  </span>
-                  <span class="status-date" [ngSwitch]="app.status">
-                    <span *ngSwitchCase="'APPLIED'">{{ app.applied_on | date:'dd.MM.yy' }}</span>
-                    <span *ngSwitchCase="'INTERVIEW'">{{ app.interview_on | date:'dd.MM.yy' }}</span>
-                    <span *ngSwitchCase="'OFFER'">{{ app.offer_on | date:'dd.MM.yy' }}</span>
-                    <span *ngSwitchCase="'REJECTED'">{{ app.rejected_on | date:'dd.MM.yy' }}</span>
-                    <span *ngSwitchDefault>{{ app.created_at | date:'dd.MM.yy' }}</span>
-                  </span>
-                </div>
-                <div class="details follow-up" *ngIf="app.follow_up_on">
-                    <span>Nachhaken: {{ app.follow_up_on | date:'dd.MM.yyyy' }}</span>
-                </div>
-                <!-- Notizen werden hier bewusst weggelassen, um die Karte kompakt zu halten -->
-                <a class="details-link" [routerLink]="['/applications/edit', app.id]">Details / Bearbeiten</a>
-                <!-- ENDE KARTEN-CODE -->
+              <!-- Loop through applications. 'track app.id' is important for performance. -->
+              @for (app of groupedApplications[status]; track app.id) {
+                <!-- Application card with conditional follow-up styling -->
+                <div class="application-card" [class.follow-up-due]="isFollowUpDue(app.follow_up_on)">
+                  <!-- START OF REUSABLE CARD CONTENT -->
+                  <h3>{{ app.job_title }}</h3>
+                  <p class="company-name">{{ app.company.name }}</p>
 
-              </div>
+                  <!-- Status and date information -->
+                  <div class="details">
+                    <span class="status-badge" [ngClass]="'status-' + app.status">
+                      {{ app.status_display }}
+                    </span>
+                                        
+                    <!-- Display relevant date based on current status -->
+                    <span class="status-date">
+                      @switch (app.status) {
+                        @case ('APPLIED') { <span>{{ app.applied_on | date : "dd.MM.yy" }}</span> }
+                        @case ('INTERVIEW') { <span>{{ app.interview_on | date : "dd.MM.yy" }}</span> }
+                        @case ('OFFER') { <span>{{ app.offer_on | date : "dd.MM.yy" }}</span> }
+                        @case ('REJECTED') { <span>{{ app.rejected_on | date : "dd.MM.yy" }}</span> }
+                        @default { <span>{{ app.created_at | date : "dd.MM.yy" }}</span> }
+                      }
+                    </span>
+                  </div>
+                  
+                  <!-- Show follow-up date if set -->
+                  @if (app.follow_up_on) {
+                    <div class="details follow-up">
+                      <span>Nachhaken: {{ app.follow_up_on | date : "dd.MM.yyyy" }}</span>
+                    </div>
+                  }
+                  
+                  <!-- Notes are intentionally omitted here to keep the card compact -->
+                  <a class="details-link" [routerLink]="['/applications/edit', app.id]">Details / Bearbeiten</a>
+                  <!-- END OF CARD CONTENT -->
+                </div>
+              }
             </div>
           </div>
-        </div>
+        }
       </div>
-    </ng-template>
-  </div>
+    </div>
+  }
+}
 </div>
