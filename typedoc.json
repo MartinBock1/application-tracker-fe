@@ -1,0 +1,32 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPointStrategy": "expand",
+  "entryPoints": ["src/app"],
+  "out": "documentation",
+  "name": "Job Application Tracker - Dokumentation",
+  "readme": "README.md",
+  "tsconfig": "tsconfig.json",
+  "exclude": [
+    "**/*.spec.ts",
+    "node_modules/**/*",
+    "src/environments/**/*"
+  ],
+  "theme": "default",
+  "excludePrivate": true,
+  "excludeExternals": true,
+  "gitRevision": "main",
+  "validation": {
+    "invalidLink": false
+  },
+  "blockTags": [
+    "@todo",
+    "@param",
+    "@returns",
+    "@remarks",
+    "@example",
+    "@see",
+    "@default",
+    "@throws"
+  ],
+  "plugin": ["typedoc-plugin-missing-exports"]
+}
