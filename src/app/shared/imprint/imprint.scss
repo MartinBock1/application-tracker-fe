@@ -1,5 +1,35 @@
 .legal-page {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 1rem;
+  max-width: 400px;
+  margin: 32px auto;
+  padding: 16px;
+}
+
+.button-container {
+  margin-top: 50px; // Space above the button
+  text-align: center; // Center the button horizontally
+}
+
+// Override global button styles if needed for legal pages
+.legal-page .btn {
+  display: inline-block;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  border: none;
+
+  // Primary button styling
+  &.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    
+    &:hover {
+      background-color: var(--primary-color-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
 }
