@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import {
   Application,
   AuthResponse,
@@ -39,9 +39,16 @@ export class Api {
   private http = inject(HttpClient);
 
   /** Base URL for all API endpoints */
-  private readonly apiUrl = '/api';
+  // private readonly apiUrl = '/api';
+  private readonly apiUrl = 'https://server-tracker.martin-bock.info/api';
 
   // --- AUTHENTICATION METHODS ---
+  private loggedIn = new BehaviorSubject<boolean>(this.hasToken());
+  isLoggedIn$ = this.loggedIn.asObservable();
+  private hasToken(): boolean {
+    // Stellt sicher, dass das Ergebnis immer ein boolean ist (true/false)
+    return !!localStorage.getItem('authToken');
+  }
 
   /**
    * Registers a new user account.
@@ -102,6 +109,7 @@ export class Api {
    */
   saveToken(token: string): void {
     localStorage.setItem('authToken', token);
+    this.loggedIn.next(true);
   }
 
   /**
@@ -134,6 +142,7 @@ export class Api {
   logout(): void {
     // Simply remove the token from storage
     localStorage.removeItem('authToken');
+    this.loggedIn.next(false);
   }
 
   /**
@@ -170,7 +179,12 @@ export class Api {
    * ```
    */
   getCompanies(): Observable<Company[]> {
-    return this.http.get<Company[]>(`${this.apiUrl}/companies/`);
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.getToken()}`,
+    });
+    return this.http.get<Company[]>(`${this.apiUrl}/companies/`, {
+      headers,
+    });
   }
 
   /**
@@ -344,5 +358,5 @@ export class Api {
       applicationData,
       { headers }
     );
-  }  
+  }
 }

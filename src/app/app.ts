@@ -1,9 +1,10 @@
-import { Component, signal, OnInit, inject } from '@angular/core';
+import { Component, signal, OnInit, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { Api } from './services/api';
 import { Company } from './models/api-interfaces';
 import { FooterComponent } from './shared/footer/footer';
+import { Subscription } from 'rxjs';
 
 /**
  * Root application component for the Job Application Tracker.
@@ -37,7 +38,7 @@ import { FooterComponent } from './shared/footer/footer';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
   // --- COMPONENT STATE PROPERTIES ---
   
   /** 
@@ -52,6 +53,7 @@ export class App implements OnInit {
    * @default []
    */
   companies: Company[] = [];
+  private authSubscription: Subscription | undefined;
   
   /** 
    * Signal controlling the mobile menu open/closed state.
@@ -81,7 +83,18 @@ export class App implements OnInit {
    * @throws Will log error to console if companies loading fails
    */
   ngOnInit(): void {
-    // Load companies for global use in dropdowns and selectors
+     this.authSubscription = this.apiService.isLoggedIn$.subscribe(isLoggedIn => {
+      if (isLoggedIn) {
+        // Wenn der Benutzer eingeloggt ist, laden Sie die Unternehmensdaten.
+        this.loadCompanies();
+      } else {
+        // Wenn der Benutzer ausgeloggt ist, leeren Sie die Liste.
+        this.companies = [];
+      }
+    });
+  }
+
+  private loadCompanies(): void {
     this.apiService.getCompanies().subscribe({
       next: (data) => {
         this.companies = data;
@@ -123,6 +136,10 @@ export class App implements OnInit {
    */
   closeMenu(): void {
     this.isMenuOpen.set(false);
+  }
+
+  ngOnDestroy(): void {
+    this.authSubscription?.unsubscribe();
   }
 
   /**

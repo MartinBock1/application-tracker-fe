@@ -130,7 +130,7 @@ export const routes: Routes = [
    */
   { 
     path: '', 
-    redirectTo: '/applications', 
+    redirectTo: '/login', 
     pathMatch: 'full' 
   },
   
