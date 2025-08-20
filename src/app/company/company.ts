@@ -104,8 +104,8 @@ export class CompanyFormComponent {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.notificationService.showWarning(
-        'Bitte füllen Sie alle Pflichtfelder korrekt aus.',
-        'Ungültige Eingabe'
+        'Please fill in all required fields correctly.',
+        'Invalid input'
       );
       return;
     }
@@ -143,15 +143,15 @@ export class CompanyFormComponent {
         .subscribe({
           next: (newContact) => {
             this.notificationService.showSuccess(
-              `Kontakt für ${newContact.first_name} ${newContact.last_name} wurde erfolgreich angelegt.`,
-              'Alles gespeichert!'
+              `Contact for ${newContact.first_name} ${newContact.last_name} has been successfully created.`,
+              'Everything saved!'
             );
             this.router.navigate(['/applications']);
           },
           error: (err) => {
             this.notificationService.showError(
-              'Ein Fehler ist aufgetreten. Bitte prüfen Sie die Eingaben und Ihre Verbindung.',
-              'Speichern fehlgeschlagen'
+              'An error has occurred. Please check your entries and your connection.',
+              'Saving failed'
             );
             console.error('Error creating company/contact:', err);
           },
@@ -165,15 +165,15 @@ export class CompanyFormComponent {
       this.api.createCompany(companyPayload).subscribe({
         next: (newCompany) => {
           this.notificationService.showSuccess(
-            `Firma "${newCompany.name}" wurde erfolgreich angelegt.`,
-            'Firma gespeichert!'
+            `Company “${newCompany.name}” has been successfully created.`,
+            'Company saved!'
           );
           this.router.navigate(['/applications']);
         },
         error: (err) => {
           this.notificationService.showError(
-            'Die Firma konnte nicht erstellt werden.',
-            'Speichern fehlgeschlagen'
+            'The company could not be created.',
+            'Saving failed'
           );
           console.error('Error creating company:', err);
         },

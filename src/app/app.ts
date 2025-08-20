@@ -10,10 +10,10 @@ import { Subscription } from 'rxjs';
  * Root application component for the Job Application Tracker.
  * 
  * This component serves as the main shell of the application, providing:
- * - Navigation structure with responsive mobile menu
- * - User authentication state management
- * - Initial data loading for companies
- * - Logout functionality
+ * - Navigation structure with a responsive mobile menu.
+ * - User authentication state management.
+ * - Initial loading of global data like companies.
+ * - Logout functionality.
  * 
  * @example
  * ```html
@@ -21,9 +21,9 @@ import { Subscription } from 'rxjs';
  * ```
  * 
  * @remarks
- * The component uses Angular signals for reactive state management and
- * implements OnInit for initial data loading. It integrates with the
- * API service for data operations and Router for navigation.
+ * The component uses Angular signals for reactive state management of the UI.
+ * It implements OnInit and OnDestroy for managing subscriptions and side effects.
+ * It integrates with the Api service for data operations and the Router for navigation.
  */
 @Component({
   selector: 'app-root',
@@ -39,8 +39,7 @@ import { Subscription } from 'rxjs';
   styleUrl: './app.scss'
 })
 export class App implements OnInit, OnDestroy {
-  // --- COMPONENT STATE PROPERTIES ---
-  
+  // --- COMPONENT STATE PROPERTIES ---  
   /** 
    * Application title signal.
    * @readonly
@@ -53,6 +52,12 @@ export class App implements OnInit, OnDestroy {
    * @default []
    */
   companies: Company[] = [];
+
+  /** 
+   * Holds the subscription to the authentication state observable.
+   * This is used to clean up the subscription when the component is destroyed, preventing memory leaks.
+   * @private
+   */
   private authSubscription: Subscription | undefined;
   
   /** 
@@ -62,8 +67,7 @@ export class App implements OnInit, OnDestroy {
    */
   isMenuOpen = signal(false);
 
-  // --- DEPENDENCY INJECTION ---
-  
+  // --- DEPENDENCY INJECTION ---  
   /** API service for data operations and authentication */
   public apiService = inject(Api);
   
@@ -73,27 +77,31 @@ export class App implements OnInit, OnDestroy {
   /**
    * Component initialization lifecycle hook.
    * 
-   * Loads initial data required by the application, specifically the list of companies
-   * that will be used in dropdown selections throughout the app.
+   * Subscribes to the authentication state. When the user logs in, it loads
+   * global data required by the application, such as the list of companies.
    * 
    * @remarks
-   * This method is called once after the component is initialized and is ideal
-   * for loading data that needs to be available application-wide.
-   * 
-   * @throws Will log error to console if companies loading fails
+   * This method sets up a reactive flow: the list of companies is automatically
+   * loaded upon login and cleared upon logout, ensuring data is only fetched
+   * for authenticated users.
    */
   ngOnInit(): void {
      this.authSubscription = this.apiService.isLoggedIn$.subscribe(isLoggedIn => {
       if (isLoggedIn) {
-        // Wenn der Benutzer eingeloggt ist, laden Sie die Unternehmensdaten.
         this.loadCompanies();
       } else {
-        // Wenn der Benutzer ausgeloggt ist, leeren Sie die Liste.
         this.companies = [];
       }
     });
   }
 
+  /**
+   * Fetches the list of companies from the API.
+   * 
+   * This private method is called when the user is authenticated.
+   * It populates the `companies` array on success and logs an error on failure.
+   * @private
+   */
   private loadCompanies(): void {
     this.apiService.getCompanies().subscribe({
       next: (data) => {
@@ -107,9 +115,9 @@ export class App implements OnInit, OnDestroy {
   }
 
   /**
-   * Toggles the mobile navigation menu open/closed state.
+   * Toggles the mobile navigation menu's open/closed state.
    * 
-   * Uses Angular signals to reactively update the menu visibility.
+   * Uses an Angular signal to reactively update the menu's visibility.
    * This method is typically called from a hamburger menu button in the template.
    * 
    * @example
@@ -124,8 +132,8 @@ export class App implements OnInit, OnDestroy {
   /**
    * Closes the mobile navigation menu.
    * 
-   * Sets the menu state to closed, typically called when a navigation
-   * link is clicked or when clicking outside the menu area.
+   * Sets the menu state to closed. This is typically called when a navigation
+   * link is clicked or when the user clicks outside the menu area.
    * 
    * @example
    * ```html
@@ -138,6 +146,12 @@ export class App implements OnInit, OnDestroy {
     this.isMenuOpen.set(false);
   }
 
+  /**
+   * Component destruction lifecycle hook.
+   * 
+   * Cleans up subscriptions to prevent memory leaks when the component
+   * is removed from the DOM.
+   */
   ngOnDestroy(): void {
     this.authSubscription?.unsubscribe();
   }
@@ -146,17 +160,16 @@ export class App implements OnInit, OnDestroy {
    * Logs out the current user and navigates to the login page.
    * 
    * This method performs a complete logout process:
-   * 1. Calls the API service to clear authentication tokens
-   * 2. Navigates to the login page
-   * 3. Closes the mobile menu if open
-   * 4. Logs the action for debugging
+   * 1. Calls the API service to clear authentication tokens.
+   * 2. Navigates the user to the login page.
+   * 3. Closes the mobile menu if it is open.
    * 
    * @example
    * ```html
    * <button (click)="logout()">Logout</button>
    * ```
    * 
-   * @see {@link Api.logout} - Clears authentication tokens from storage
+   * @see {@link Api.logout} - The service method that clears authentication tokens.
    */
   logout(): void {
     this.apiService.logout();

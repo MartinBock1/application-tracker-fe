@@ -58,18 +58,51 @@
           </select>
         </div>
 
-        <!-- Dynamische Datumsfelder (Ihre bestehende Logik hier einfügen) -->
+        <!-- ======================================================== -->
+        <!-- DYNAMISCHE DATUMSFELDER - HIER WURDE DER CODE ERGÄNZT -->
+        <!-- ======================================================== -->
+
+        <!-- Zeige "Beworben am", wenn Status APPLIED ist -->
         @if(applicationForm.get('status')?.value === 'APPLIED') {
         <div class="form-group">
-          <label for="applied_on"
-            >Beworben am <span class="required-asterisk">*</span></label
-          >
+          <label for="applied_on">
+            Beworben am <span class="required-asterisk">*</span>
+          </label>
           <input id="applied_on" type="date" formControlName="applied_on" />
         </div>
         }
-        <!-- ... weitere Datumsfelder ... -->
 
-        <!-- Nachhaken am (unverändert) -->
+        <!-- Zeige "Interview am", wenn Status INTERVIEW ist -->
+        @if(applicationForm.get('status')?.value === 'INTERVIEW') {
+        <div class="form-group">
+          <label for="interview_on">
+            Interview am <span class="required-asterisk">*</span>
+          </label>
+          <input id="interview_on" type="date" formControlName="interview_on" />
+        </div>
+        }
+
+        <!-- Zeige "Angebot erhalten am", wenn Status OFFER ist -->
+        @if(applicationForm.get('status')?.value === 'OFFER') {
+        <div class="form-group">
+          <label for="offer_on">
+            Angebot erhalten am <span class="required-asterisk">*</span>
+          </label>
+          <input id="offer_on" type="date" formControlName="offer_on" />
+        </div>
+        }
+
+        <!-- Zeige "Abgelehnt am", wenn Status REJECTED ist -->
+        @if(applicationForm.get('status')?.value === 'REJECTED') {
+        <div class="form-group">
+          <label for="rejected_on">
+            Abgelehnt am <span class="required-asterisk">*</span>
+          </label>
+          <input id="rejected_on" type="date" formControlName="rejected_on" />
+        </div>
+        }
+        
+        <!-- Nachhaken am (optionales Feld) -->
         <div class="form-group">
           <label for="follow_up_on">Nachhaken am</label>
           <input id="follow_up_on" type="date" formControlName="follow_up_on" />

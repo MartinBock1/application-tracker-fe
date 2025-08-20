@@ -11,7 +11,9 @@ import {
   CreateContactPayload,
 } from '../models/api-interfaces';
 
+/** A payload type for updating a company, where all fields are optional. */
 type UpdateCompanyPayload = Partial<CreateCompanyPayload>;
+/** A payload type for updating a contact, where all fields are optional. */
 type UpdateContactPayload = Partial<Contact>;
 
 /**
@@ -38,16 +40,30 @@ type UpdateContactPayload = Partial<Contact>;
   providedIn: 'root',
 })
 export class Api {
-  // Dependency injection using Angular's inject function
+  /** Injected HttpClient for making HTTP requests. */
   private http = inject(HttpClient);
 
   /** Base URL for all API endpoints */
-  // private readonly apiUrl = '/api';
-  private readonly apiUrl = 'https://server-tracker.martin-bock.info/api';
+  // private readonly apiUrl = '/api';  // Use relative URL for development
+  private readonly apiUrl = 'https://server-tracker.martin-bock.info/api';  // Use absolute URL for production
 
   // --- AUTHENTICATION METHODS ---
+  /** 
+   * A private BehaviorSubject that holds the current login state.
+   * @private
+   */
   private loggedIn = new BehaviorSubject<boolean>(this.hasToken());
+
+  /** 
+   * A public observable that components can subscribe to for real-time updates on the login state.
+   */
   isLoggedIn$ = this.loggedIn.asObservable();
+
+  /**
+   * Checks if an authentication token exists in localStorage.
+   * @returns `true` if a token exists, `false` otherwise.
+   * @private
+   */
   private hasToken(): boolean {
     // Stellt sicher, dass das Ergebnis immer ein boolean ist (true/false)
     return !!localStorage.getItem('authToken');
@@ -56,8 +72,8 @@ export class Api {
   /**
    * Registers a new user account.
    *
-   * @param userData - User registration data including username, email, and password
-   * @returns Observable containing authentication response with token and user info
+   * @param userData - User registration data including username, email, and password.
+   * @returns An Observable containing the authentication response with a token and user info.
    *
    * @example
    * ```typescript
@@ -76,10 +92,10 @@ export class Api {
   }
 
   /**
-   * Authenticates user with credentials.
+   * Authenticates a user with credentials.
    *
-   * @param credentials - Login credentials containing username/email and password
-   * @returns Observable containing authentication response with token and user info
+   * @param credentials - Login credentials containing username/email and password.
+   * @returns An Observable containing the authentication response with a token and user info.
    *
    * @example
    * ```typescript
@@ -98,11 +114,10 @@ export class Api {
   }
 
   // --- TOKEN MANAGEMENT & STATUS ---
-
   /**
-   * Saves authentication token to localStorage.
+   * Saves the authentication token to localStorage and updates the login status.
    *
-   * @param token - JWT authentication token from login/registration
+   * @param token - The JWT authentication token from login/registration.
    *
    * @example
    * ```typescript
@@ -116,9 +131,9 @@ export class Api {
   }
 
   /**
-   * Retrieves stored authentication token.
+   * Retrieves the stored authentication token.
    *
-   * @returns Authentication token string or null if not found
+   * @returns The authentication token string or `null` if not found.
    *
    * @example
    * ```typescript
@@ -137,7 +152,7 @@ export class Api {
    *
    * @example
    * ```typescript
-   * // Logout and redirect to login page
+   * // Logout and redirect to the login page
    * this.api.logout();
    * this.router.navigate(['/login']);
    * ```
@@ -149,9 +164,9 @@ export class Api {
   }
 
   /**
-   * Checks if user is currently logged in.
+   * Checks if a user is currently logged in.
    *
-   * @returns True if authentication token exists, false otherwise
+   * @returns `true` if an authentication token exists, `false` otherwise.
    *
    * @example
    * ```typescript
@@ -168,11 +183,10 @@ export class Api {
   }
 
   // --- COMPANIES CRUD OPERATIONS ---
-
   /**
    * Fetches all companies available to the authenticated user.
    *
-   * @returns Observable array of Company objects
+   * @returns An Observable array of Company objects.
    *
    * @example
    * ```typescript
@@ -193,10 +207,8 @@ export class Api {
   /**
    * Creates a new company.
    *
-   * @param companyData - Company data payload with name, industry, and optional website
-   * @returns Observable containing the newly created Company object
-   *
-   * @throws Will throw HTTP error if creation fails or user is unauthorized
+   * @param companyData - The company data payload with name, industry, and optional website.
+   * @returns An Observable containing the newly created Company object.
    *
    * @example
    * ```typescript
@@ -215,6 +227,13 @@ export class Api {
     });
   }
 
+  /**
+   * Updates an existing company with a partial payload.
+   *
+   * @param id - The ID of the company to update.
+   * @param payload - An object containing the fields to update.
+   * @returns An Observable containing the updated Company object.
+   */
   updateCompany(id: number, payload: UpdateCompanyPayload): Observable<Company> {
     const headers = new HttpHeaders({
       Authorization: `Token ${this.getToken()}`,
@@ -225,14 +244,11 @@ export class Api {
   }
 
   // --- CONTACTS CRUD OPERATIONS ---
-
   /**
    * Creates a new contact person associated with a company.
    *
-   * @param contactData - Contact data payload with personal info and company_id
-   * @returns Observable containing the newly created Contact object
-   *
-   * @throws Will throw HTTP error if creation fails or user is unauthorized
+   * @param contactData - The contact data payload with personal info and `company_id`.
+   * @returns An Observable containing the newly created Contact object.
    *
    * @example
    * ```typescript
@@ -256,6 +272,13 @@ export class Api {
     });
   }
 
+  /**
+   * Updates an existing contact with a partial payload.
+   *
+   * @param id - The ID of the contact to update.
+   * @param payload - An object containing the fields to update.
+   * @returns An Observable containing the updated Contact object.
+   */
   updateContact(id: number, payload: UpdateContactPayload): Observable<Contact> {
     const headers = new HttpHeaders({
       Authorization: `Token ${this.getToken()}`,
@@ -267,6 +290,10 @@ export class Api {
 
   /**
    * Fetches all contacts for a specific company.
+   *
+   * @param companyId - The ID of the company whose contacts are to be fetched.
+   * @returns An Observable array of Contact objects.
+   * @remarks This assumes the API supports filtering contacts via a `company_id` query parameter.
    */
   getContactsForCompany(companyId: number): Observable<Contact[]> {
     const headers = new HttpHeaders({
@@ -278,15 +305,25 @@ export class Api {
     });
   }
 
-  // --- APPLICATIONS CRUD OPERATIONS ---
+  /**
+   * Deletes a contact record by ID.
+   *
+   * @param id - The ID of the contact to delete.
+   * @returns An Observable indicating completion of the deletion.
+   */
+  deleteContact(id: number): Observable<void> {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.getToken()}`,
+    });
+    return this.http.delete<void>(`${this.apiUrl}/contacts/${id}/`, { headers });
+  }
 
+  // --- APPLICATIONS CRUD OPERATIONS ---
   /**
    * Creates a new job application.
    *
-   * @param applicationData - Application data payload with job details and status
-   * @returns Observable containing the newly created Application object
-   *
-   * @throws Will throw HTTP error if creation fails or user is unauthorized
+   * @param applicationData - The application data payload with job details and status.
+   * @returns An Observable containing the newly created Application object.
    *
    * @example
    * ```typescript
@@ -316,9 +353,7 @@ export class Api {
   /**
    * Fetches all job applications for the authenticated user.
    *
-   * @returns Observable array of Application objects with related company and notes data
-   *
-   * @throws Will throw HTTP error if user is unauthorized
+   * @returns An Observable array of Application objects with related company and notes data.
    *
    * @example
    * ```typescript
@@ -341,10 +376,8 @@ export class Api {
   /**
    * Fetches a single job application by its ID.
    *
-   * @param id - Unique identifier of the application to retrieve
-   * @returns Observable containing the Application object with full details
-   *
-   * @throws Will throw HTTP error if application not found or user unauthorized
+   * @param id - The unique identifier of the application to retrieve.
+   * @returns An Observable containing the Application object with full details.
    *
    * @example
    * ```typescript
@@ -365,11 +398,9 @@ export class Api {
   /**
    * Updates an existing job application.
    *
-   * @param id - Unique identifier of the application to update
-   * @param applicationData - Updated application data payload
-   * @returns Observable containing the updated Application object
-   *
-   * @throws Will throw HTTP error if application not found or user unauthorized
+   * @param id - The unique identifier of the application to update.
+   * @param applicationData - The updated application data payload.
+   * @returns An Observable containing the updated Application object.
    *
    * @example
    * ```typescript
