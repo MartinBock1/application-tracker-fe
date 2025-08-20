@@ -9,7 +9,19 @@ Allgemeine Formularstile (z.B. für Dropdowns)
   max-width: 800px;
 }
 
+fieldset {
+  // border: none; // Stellt sicher, dass alle fieldsets keinen Rahmen haben
+  padding: 10px;
+  margin: 0 0 30px 0; // Fügt 30px Abstand nach unten hinzu
+}
+
 .form-group {
+
+  label {
+    color: rgba(255, 255, 255, 0.7); // Ein leicht transparentes Weiß
+    margin-bottom: 8px;
+    display: block;
+  }
 
   input[type="text"],
   input[type="date"],

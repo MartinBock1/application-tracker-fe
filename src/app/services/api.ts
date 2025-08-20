@@ -11,6 +11,9 @@ import {
   CreateContactPayload,
 } from '../models/api-interfaces';
 
+type UpdateCompanyPayload = Partial<CreateCompanyPayload>;
+type UpdateContactPayload = Partial<Contact>;
+
 /**
  * Service for handling all API communications with the backend.
  *
@@ -212,6 +215,15 @@ export class Api {
     });
   }
 
+  updateCompany(id: number, payload: UpdateCompanyPayload): Observable<Company> {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.getToken()}`,
+    });
+    return this.http.patch<Company>(`${this.apiUrl}/companies/${id}/`, payload, {
+      headers,
+    });
+  }
+
   // --- CONTACTS CRUD OPERATIONS ---
 
   /**
@@ -240,6 +252,28 @@ export class Api {
       Authorization: `Token ${this.getToken()}`,
     });
     return this.http.post<Contact>(`${this.apiUrl}/contacts/`, contactData, {
+      headers,
+    });
+  }
+
+  updateContact(id: number, payload: UpdateContactPayload): Observable<Contact> {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.getToken()}`,
+    });
+    return this.http.patch<Contact>(`${this.apiUrl}/contacts/${id}/`, payload, {
+      headers,
+    });
+  }
+
+  /**
+   * Fetches all contacts for a specific company.
+   */
+  getContactsForCompany(companyId: number): Observable<Contact[]> {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.getToken()}`,
+    });
+    // Annahme: Die API unterstützt das Filtern von Kontakten nach company_id
+    return this.http.get<Contact[]>(`${this.apiUrl}/contacts/?company_id=${companyId}`, {
       headers,
     });
   }

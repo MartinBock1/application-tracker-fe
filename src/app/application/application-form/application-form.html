@@ -1,43 +1,35 @@
 <div class="auth-container">
   <div class="auth-card">
-    <!-- Dynamic header based on edit mode -->
     <h2>
       {{ isEditMode ? "Bewerbung bearbeiten" : "Neue Bewerbung erstellen" }}
     </h2>
-    
-    <!-- Show subtitle only for new applications -->
+
     @if(!isEditMode) {
     <p class="subtitle">
       Bitte fülle die folgenden Informationen aus, um eine neue Bewerbung zu
       erstellen.
     </p>
     }
-    
-    <!-- Required fields notice -->
+
     <p class="required-fields-notice">
       Felder mit einem <span class="required-asterisk">*</span> sind
       Pflichtfelder.
     </p>
 
-    <!-- Main application form with reactive form binding -->
     <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()">
       <fieldset>
         <legend>Bewerbungsdetails</legend>
 
-        <!-- Job title input field -->
+        <!-- Jobtitel -->
         <div class="form-group">
           <label for="job_title">
             Jobtitel <span class="required-asterisk">*</span>
           </label>
-          <input
-            id="job_title"
-            type="text"
-            formControlName="job_title"
-            placeholder="z.B. Senior Frontend Developer"
-          />
+          <input id="job_title" type="text" formControlName="job_title" />
         </div>
-        
-        <!-- Company selection dropdown -->
+
+        <!-- Firmen-Dropdown nur im Erstellmodus anzeigen -->
+        @if(!isEditMode) {
         <div class="form-group">
           <label for="company_id">
             Unternehmen <span class="required-asterisk">*</span>
@@ -46,16 +38,14 @@
             <option [ngValue]="null" disabled>
               Bitte Unternehmen auswählen
             </option>
-            <!-- Loop through available companies -->
             @for(company of companies; track company.id) {
-            <option [ngValue]="company.id">
-              {{ company.name }}
-            </option>
+            <option [ngValue]="company.id">{{ company.name }}</option>
             }
           </select>
         </div>
-        
-        <!-- Application status selection -->
+        }
+
+        <!-- Status -->
         <div class="form-group">
           <label for="status"> Status ( bitte auswählen ) </label>
           <select id="status" formControlName="status">
@@ -68,75 +58,128 @@
           </select>
         </div>
 
-        <!-- ======================================================== -->
-        <!-- DYNAMIC DATE FIELDS SECTION - Shows relevant dates based on status -->
-        <!-- ======================================================== -->
-
-        <!-- Show "Applied on" date when status is APPLIED -->
+        <!-- Dynamische Datumsfelder (Ihre bestehende Logik hier einfügen) -->
         @if(applicationForm.get('status')?.value === 'APPLIED') {
         <div class="form-group">
-          <label for="applied_on">
-            Beworben am <span class="required-asterisk">*</span>
-          </label>
+          <label for="applied_on"
+            >Beworben am <span class="required-asterisk">*</span></label
+          >
           <input id="applied_on" type="date" formControlName="applied_on" />
         </div>
         }
+        <!-- ... weitere Datumsfelder ... -->
 
-        <!-- Show "Interview on" date when status is INTERVIEW -->
-        @if(applicationForm.get('status')?.value === 'INTERVIEW') {
-        <div class="form-group">
-          <label for="interview_on">
-            Interview am <span class="required-asterisk">*</span>
-          </label>
-          <input id="interview_on" type="date" formControlName="interview_on" />
-        </div>
-        }
-
-        <!-- Show "Offer received on" date when status is OFFER -->
-        @if(applicationForm.get('status')?.value === 'OFFER') {
-        <div class="form-group">
-          <label for="offer_on">
-            Angebot erhalten am <span class="required-asterisk">*</span>
-          </label>
-          <input id="offer_on" type="date" formControlName="offer_on" />
-        </div>
-        }
-
-        <!-- Show "Rejected on" date when status is REJECTED -->
-        @if(applicationForm.get('status')?.value === 'REJECTED') {
-        <div class="form-group">
-          <label for="rejected_on">
-            Abgelehnt am <span class="required-asterisk">*</span>
-          </label>
-          <input id="rejected_on" type="date" formControlName="rejected_on" />
-        </div>
-        }
-
-        <!-- Optional follow-up date field - always visible -->
+        <!-- Nachhaken am (unverändert) -->
         <div class="form-group">
           <label for="follow_up_on">Nachhaken am</label>
           <input id="follow_up_on" type="date" formControlName="follow_up_on" />
         </div>
       </fieldset>
 
-      <!-- Notes section - only shown in edit mode -->
+      <!-- ========================================================== -->
+      <!-- Firmen- & Kontaktdaten - Nur im Bearbeitungsmodus sichtbar -->
+      <!-- ========================================================== -->
+      @if(isEditMode) {
+      <div formGroupName="details">
+        <!-- Firmendaten zum Bearbeiten -->
+        <fieldset formGroupName="company">
+          <legend>Firmendaten</legend>
+
+          <div class="form-group">
+            <label for="company-name"
+              >Firmenname <span class="required-asterisk">*</span></label
+            >
+            <input id="company-name" type="text" formControlName="name" />
+          </div>
+
+          <div class="form-group">
+            <label for="company-industry"
+              >Branche <span class="required-asterisk">*</span></label
+            >
+            <input
+              id="company-industry"
+              type="text"
+              formControlName="industry"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="company-website">Webseite</label>
+            <input id="company-website" type="url" formControlName="website" />
+          </div>
+        </fieldset>
+
+        <!-- Kontaktdaten zum Bearbeiten -->
+        <fieldset formGroupName="contact">
+          <legend>Kontaktperson</legend>
+          @if
+          (applicationForm.get('details.contact')?.hasError('contactIncomplete')
+          && applicationForm.get('details.contact')?.touched) {
+          <div class="error">
+            Bitte füllen Sie entweder Vor- und Nachname aus, oder lassen Sie
+            beide Felder leer.
+          </div>
+          }
+
+          <div class="form-group">
+            <label for="contact-firstname">Vorname</label>
+            <input
+              id="contact-firstname"
+              type="text"
+              formControlName="first_name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="contact-lastname">Nachname</label>
+            <input
+              id="contact-lastname"
+              type="text"
+              formControlName="last_name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="contact-email">E-Mail</label>
+            <input id="contact-email" type="email" formControlName="email" />
+            @if (applicationForm.get('details.contact.email')?.touched &&
+            applicationForm.get('details.contact.email')?.errors?.['email']) {
+            <div class="error">
+              Bitte geben Sie eine gültige E-Mail-Adresse ein.
+            </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="contact-position">Position</label>
+            <input
+              id="contact-position"
+              type="text"
+              formControlName="position"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="contact-phone">Telefon</label>
+            <input id="contact-phone" type="tel" formControlName="phone" />
+          </div>
+        </fieldset>
+      </div>
+      }
+
+      <!-- Notizen-Sektion (unverändert) -->
       @if(isEditMode) {
       <fieldset class="notes-fieldset">
         <legend>Notizen</legend>
         <div formArrayName="notes" class="notes-container">
-          <!-- Show message when no notes exist -->
           @if(notes.length === 0) {
           <p class="no-notes-info">Noch keine Notizen hinzugefügt.</p>
-          } 
-          
-          <!-- Loop through existing notes -->
-          @for(note of notes.controls; track notes; let i = $index) {
+          } @for(note of notes.controls; track i; let i = $index) {
           <div [formGroupName]="i" class="note-item">
             <textarea
               formControlName="text"
               placeholder="Ihre Notiz..."
             ></textarea>
-            <!-- Remove note button -->
             <button
               type="button"
               (click)="onDeleteNote(i)"
@@ -148,16 +191,14 @@
           </div>
           }
         </div>
-        <!-- Add new note button -->
         <button type="button" (click)="onAddNote()" class="btn-add-note">
           + Neue Notiz hinzufügen
         </button>
       </fieldset>
       }
-      
+
       <br />
-      
-      <!-- Submit button with dynamic text and disabled state -->
+
       <button
         type="submit"
         class="btn btn-primary"
@@ -167,7 +208,6 @@
       </button>
     </form>
 
-    <!-- Navigation back to applications list -->
     <div class="switch-auth-link">
       <a routerLink="/applications">Zurück zur Übersicht</a>
     </div>

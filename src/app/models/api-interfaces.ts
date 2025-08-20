@@ -80,7 +80,7 @@ export interface CreateCompanyPayload {
 export interface CreateContactPayload {
   first_name: string;
   last_name: string;
-  email: string;
+  email?: string;
   phone?: string;
   position?: string;
   company_id: number;  // Hier wird die ID der Firma übergeben

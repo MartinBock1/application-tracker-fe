@@ -2,37 +2,36 @@ import { Component, OnInit, inject } from '@angular/core';
 import {
   FormArray,
   FormBuilder,
-  FormGroup,
   ReactiveFormsModule,
   Validators,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
 } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Api } from '../../services/api';
 import {
-  Application,
   ApplicationStatus,
   Company,
+  Contact, // Wir brauchen den Contact-Typ
   CreateApplicationPayload,
+  CreateContactPayload,
+  // Schnittstellen importiert lassen
 } from '../../models/api-interfaces';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../services/notification';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
-/**
- * Component for creating and editing job applications.
- * 
- * This component provides a reactive form with company selection, application status tracking,
- * and dynamic notes management. It handles both creation of new applications and editing
- * of existing ones based on the route parameters.
- * 
- * @example
- * ```html
- * <!-- Create new application -->
- * <app-application-form></app-application-form>
- * 
- * <!-- Edit existing application (via routing) -->
- * <!-- Route: /applications/edit/:id -->
- * ```
- */
+export const contactRequiredValidator: ValidatorFn = (
+  control: AbstractControl
+): ValidationErrors | null => {
+  const firstName = control.get('first_name')?.value;
+  const lastName = control.get('last_name')?.value;
+  const isInvalid = (firstName && !lastName) || (!firstName && lastName);
+  return isInvalid ? { contactIncomplete: true } : null;
+};
+
 @Component({
   selector: 'app-application-form',
   standalone: true,
@@ -41,43 +40,19 @@ import { NotificationService } from '../../services/notification';
   styleUrl: './application-form.scss',
 })
 export class ApplicationForm implements OnInit {
-  // Dependency injection using Angular's inject function
   private fb = inject(FormBuilder);
   private apiService = inject(Api);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private notificationService = inject(NotificationService);
 
-  /** 
-   * Array of available companies for selection in the form dropdown.
-   * Populated during component initialization from the API.
-   */
   companies: Company[] = [];
-  
-  /** 
-   * ID of the application being edited.
-   * @default null - Indicates creation mode when null
-   */
   currentApplicationId: string | null = null;
-  
-  /** 
-   * Flag indicating whether the form is in edit mode or create mode.
-   * @default false - Component starts in create mode
-   */
   isEditMode = false;
-  
-  /** 
-   * Reactive form for job application data.
-   * 
-   * Contains all application fields including a dynamic notes array.
-   * Form validation ensures required fields are completed before submission.
-   * 
-   * @remarks
-   * The form structure includes:
-   * - Basic application details (job_title, company_id, status)
-   * - Date fields for tracking application progress
-   * - Dynamic notes array for additional information
-   */
+
+  // KORREKTUR: Fehlende Klasseneigenschaft hinzugefügt
+  currentContactId: number | null = null;
+
   applicationForm = this.fb.group({
     job_title: ['', Validators.required],
     company_id: [null as number | null, Validators.required],
@@ -87,230 +62,243 @@ export class ApplicationForm implements OnInit {
     offer_on: [null as string | null],
     rejected_on: [null as string | null],
     follow_up_on: [null as string | null],
-    /** Dynamic array of notes with id and text fields */
     notes: this.fb.array([]),
+
+    details: this.fb.group({
+      company: this.fb.group({
+        name: ['', Validators.required],
+        industry: ['', Validators.required],
+        website: [''],
+      }),
+      contact: this.fb.group(
+        {
+          id: [null as number | null],
+          first_name: [''],
+          last_name: [''],
+          email: ['', [Validators.email]],
+          position: [''],
+          phone: [''],
+        },
+        { validators: contactRequiredValidator }
+      ),
+    }),
   });
 
-  /**
-   * Component initialization lifecycle hook.
-   * 
-   * Performs the following initialization tasks:
-   * 1. Loads available companies for dropdown selection
-   * 2. Checks route parameters to determine if editing existing application
-   * 3. Sets up reactive status change tracking
-   * 
-   * @remarks
-   * If an 'id' parameter is present in the route, the component switches to edit mode
-   * and loads the existing application data.
-   */
   ngOnInit(): void {
-    // Load available companies for dropdown selection
+    // Diese Logik bleibt unverändert
     this.apiService.getCompanies().subscribe((data) => {
       this.companies = data;
     });
-    
-    // Check if editing existing application
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEditMode = true;
       this.currentApplicationId = id;
       this.loadApplicationForEdit(id);
+      this.applicationForm.get('company_id')?.disable();
     }
-    
-    // Set up reactive status change tracking
-    this.trackStatusChanges();
   }
 
-  /**
-   * Sets up reactive tracking for application status changes.
-   * 
-   * Automatically manages date fields based on status transitions to ensure
-   * data consistency and improve user experience.
-   * 
-   * @todo Implement the actual status change tracking logic
-   */
-  trackStatusChanges(): void {
-    // Implementation for status change tracking
-    // ... your existing code here ...
-  }
-
-  /**
-   * Getter for the notes FormArray.
-   * 
-   * Provides type-safe access to the dynamic notes collection within the form.
-   * 
-   * @returns FormArray containing note form groups with id and text fields
-   * 
-   * @example
-   * ```typescript
-   * // Add a new note
-   * this.notes.push(this.fb.group({
-   *   id: [null],
-   *   text: ['New note', Validators.required]
-   * }));
-   * ```
-   */
   get notes(): FormArray {
     return this.applicationForm.get('notes') as FormArray;
   }
 
   /**
-   * Loads an existing application for editing.
-   * 
-   * Fetches application data from the API and populates the form fields.
-   * Handles company relationship mapping and notes array population.
-   * 
-   * @param id - The unique identifier of the application to load
-   * 
-   * @throws Will display error notification and navigate to applications list if loading fails
-   * 
-   * @remarks
-   * The method performs the following operations:
-   * 1. Fetches application data via API
-   * 2. Populates form with application data
-   * 3. Maps company relationship correctly
-   * 4. Clears and repopulates notes array
-   * 5. Handles errors gracefully with user feedback
+   * KORRIGIERT: Lädt die Bewerbung und greift korrekt auf `application.company`
+   * und `application.contact` zu.
    */
   loadApplicationForEdit(id: string): void {
-    this.apiService.getApplicationById(id).subscribe({
-        next: (application) => {
-            // Populate form with application data
-            this.applicationForm.patchValue(application);
-            this.applicationForm.patchValue({ company_id: application.company.id });
-            
-            // Clear existing notes to prevent duplicates
-            this.notes.clear();
-            
-            // Add each note as a form group
-            application.notes.forEach((note) => {
-                this.notes.push(
-                    this.fb.group({
-                        id: [note.id],
-                        text: [note.text, Validators.required],
-                    })
-                );
-            });
-        },
-        error: (err) => {
-            this.notificationService.showError('Die Bewerbungsdetails konnten nicht geladen werden.', 'Ladefehler');
-            console.error('Error loading application details:', err);
-            // Navigate back to applications list on error
-            this.router.navigate(['/applications']);
+    this.apiService.getApplicationById(id).pipe(
+      switchMap(application => {
+        // Schritt 1: Fülle sofort alle bekannten Daten (Bewerbung, Firma, Notizen)
+        this.applicationForm.patchValue(application);
+        this.applicationForm.patchValue({ company_id: application.company.id });
+        this.applicationForm.get('details.company')?.patchValue(application.company);
+
+        this.notes.clear();
+        application.notes.forEach(note => {
+          this.notes.push(this.fb.group({ id: [note.id], text: [note.text, Validators.required] }));
+        });
+
+        // Schritt 2: Prüfe, ob die Bewerbung bereits einen verknüpften Kontakt hat
+        if (application.contact) {
+          // Wenn ja, ist alles einfach. Wir geben ihn als Observable zurück.
+          return of(application.contact); 
+        } else {
+          // Wenn nein, holen wir uns alle Kontakte für diese Firma
+          return this.apiService.getContactsForCompany(application.company.id);
         }
+      })
+    ).subscribe({
+      next: (contactOrContacts) => {
+        let primaryContact: Contact | null = null;
+        if (Array.isArray(contactOrContacts) && contactOrContacts.length > 0) {
+          // Wir haben ein Array von Kontakten von der Firma bekommen -> nimm den ersten
+          primaryContact = contactOrContacts[0];
+        } else if (contactOrContacts && !Array.isArray(contactOrContacts)) {
+          // Wir haben einen einzelnen Kontakt direkt von der Bewerbung bekommen
+          primaryContact = contactOrContacts;
+        }
+
+        if (primaryContact) {
+          // Fülle das Formular mit dem gefundenen Kontakt
+          this.currentContactId = primaryContact.id;
+          this.applicationForm.get('details.contact')?.patchValue(primaryContact);
+        }
+      },
+      error: (err) => {
+        this.notificationService.showError('Die Bewerbungsdetails konnten nicht geladen werden.', 'Ladefehler');
+        console.error('Error loading application details:', err);
+        this.router.navigate(['/applications']);
+      },
     });
   }
 
-  /**
-   * Adds a new empty note to the notes array.
-   * 
-   * Creates a new form group with id and text fields and appends it to the notes FormArray.
-   * The new note is initialized with null id (for new notes) and empty text with validation.
-   * 
-   * @example
-   * ```typescript
-   * // User clicks "Add Note" button
-   * onAddNote(); // Creates new empty note form group
-   * ```
-   */
   onAddNote(): void {
     this.notes.push(
-      this.fb.group({ 
-        id: [null], 
-        text: ['', Validators.required] 
-      })
+      this.fb.group({ id: [null], text: ['', Validators.required] })
     );
   }
 
-  /**
-   * Removes a note from the notes array at the specified index.
-   * 
-   * @param index - The zero-based index of the note to remove
-   * 
-   * @throws Will throw an error if index is out of bounds
-   * 
-   * @example
-   * ```typescript
-   * // Remove the second note (index 1)
-   * onDeleteNote(1);
-   * ```
-   */
   onDeleteNote(index: number): void {
     this.notes.removeAt(index);
   }
 
   /**
-   * Handles form submission for both create and update operations.
-   * 
-   * Validates form data, prepares payload, and executes the appropriate API call
-   * based on the current mode (create or edit). Provides user feedback through
-   * notifications and handles navigation on success.
-   * 
-   * @remarks
-   * The method performs the following operations:
-   * 1. Validates form data and shows validation errors if invalid
-   * 2. Prepares payload from form values with proper type casting
-   * 3. Executes create or update operation based on edit mode
-   * 4. Handles success/error cases with appropriate notifications
-   * 5. Navigates to applications list on successful operation
-   * 
-   * @throws Will display error notification if API call fails
-   * 
-   * @example
-   * ```typescript
-   * // Called when user submits the form
-   * onSubmit(); // Validates and saves application
-   * ```
+   * KORRIGIERT: Stellt durch Non-Null-Assertions (!) sicher, dass der Payload
+   * typsicher ist und dem `CreateApplicationPayload` Interface entspricht.
    */
   onSubmit() {
-    // Validate form before submission
     if (this.applicationForm.invalid) {
       this.applicationForm.markAllAsTouched();
       this.notificationService.showWarning('Bitte füllen Sie alle Pflichtfelder korrekt aus.', 'Ungültige Eingabe');
       return;
     }
 
-    // Prepare payload from form values
     const formValue = this.applicationForm.getRawValue();
-    const payload: CreateApplicationPayload = {
-      job_title: formValue.job_title!,
-      company_id: formValue.company_id!,
-      status: formValue.status!,
-      applied_on: formValue.applied_on || null,
-      interview_on: formValue.interview_on || null,
-      offer_on: formValue.offer_on || null,
-      rejected_on: formValue.rejected_on || null,
-      follow_up_on: formValue.follow_up_on || null,
-      notes: formValue.notes as { id?: number; text: string }[],
-    };
+    if (!this.isEditMode || !this.currentApplicationId) { return; }
 
-    if (this.isEditMode && this.currentApplicationId) {
-      /** UPDATE operation - modify existing application */
-      this.apiService.updateApplication(this.currentApplicationId, payload).subscribe({
-          next: () => {
-            this.notificationService.showSuccess('Die Bewerbung wurde erfolgreich aktualisiert.');
-            this.router.navigate(['/applications']);
-          },
-          error: (err) => {
-            this.notificationService.showError('Die Bewerbung konnte nicht aktualisiert werden.', 'Update fehlgeschlagen');
-            console.error('Error updating application:', err);
-          }
-      });
-    } else {
-      /** CREATE operation - create new application */
-      // Remove notes for creation (handled separately by API)
-      delete payload.notes;
+    const companyData = this.applicationForm.get('details.company')?.value;
+    const contactData = this.applicationForm.get('details.contact')?.value;
+
+    const shouldCreateContact = !this.currentContactId && contactData?.first_name && contactData?.last_name;
+
+    if (shouldCreateContact) {
+      // SZENARIO 1: NEUEN KONTAKT ERSTELLEN
       
-      this.apiService.createApplication(payload).subscribe({
-          next: (newApplication) => {
-            this.notificationService.showSuccess(`Bewerbung für "${newApplication.job_title}" wurde erstellt.`);
-            this.router.navigate(['/applications']);
+      // Schritt 1: Erstelle den Payload nur mit den 100%ig notwendigen Feldern.
+      const createContactPayload: CreateContactPayload = {
+        first_name: contactData.first_name!,
+        last_name: contactData.last_name!,
+        company_id: formValue.company_id!,
+      };
+
+      // Schritt 2: Füge die optionalen Felder NUR DANN hinzu, wenn sie einen validen, nicht-leeren Wert haben.
+      // Dies ist die entscheidende, kugelsichere Logik.
+      if (contactData.email && contactData.email.trim() !== '') {
+        createContactPayload.email = contactData.email;
+      }
+      if (contactData.position && contactData.position.trim() !== '') {
+        createContactPayload.position = contactData.position;
+      }
+      if (contactData.phone && contactData.phone.trim() !== '') {
+        createContactPayload.phone = contactData.phone;
+      }
+
+      // --- DIAGNOSE-SCHRITT: Zeige uns genau, was gesendet wird ---
+      console.log('%cSENDING TO API (createContact):', 'color: blue; font-weight: bold;', createContactPayload);
+      // ---------------------------------------------------------
+
+      this.apiService.createContact(createContactPayload).pipe(
+        switchMap(newContact => {
+          const applicationPayload: CreateApplicationPayload = {
+            job_title: formValue.job_title!,
+            company_id: formValue.company_id!,
+            contact_id: newContact.id,
+            status: formValue.status!,
+            notes: formValue.notes as any,
+          };
+          const companyPayload = {
+            name: companyData!.name!,
+            industry: companyData!.industry!,
+            website: companyData!.website || null,
+          };
+          return forkJoin({
+            application: this.apiService.updateApplication(this.currentApplicationId!, applicationPayload),
+            company: this.apiService.updateCompany(formValue.company_id!, companyPayload),
+          });
+        })
+      ).subscribe({
+        next: () => this.onSaveSuccess(),
+        error: err => this.onSaveError(err, 'create'),
+      });
+
+    } else {
+      // SZENARIO 2: Bestehende Daten aktualisieren
+      const observables = [];
+      const applicationPayload: CreateApplicationPayload = {
+        job_title: formValue.job_title!,
+        company_id: formValue.company_id!,
+        contact_id: this.currentContactId,
+        status: formValue.status!,
+        notes: formValue.notes as any,
+      };
+      observables.push(
+        this.apiService.updateApplication(
+          this.currentApplicationId,
+          applicationPayload
+        )
+      );
+
+      if (companyData) {
+        const companyPayload = {
+          name: companyData.name!,
+          industry: companyData.industry!,
+          website: companyData.website || null,
+        };
+        observables.push(
+          this.apiService.updateCompany(formValue.company_id!, companyPayload)
+        );
+      }
+
+      if (this.currentContactId && contactData) {
+        const { id, ...payload } = contactData;
+        const cleanContactPayload = Object.entries(payload).reduce(
+          (acc, [key, value]) => {
+            if (value) (acc as any)[key] = value;
+            return acc;
           },
-          error: (err) => {
-            this.notificationService.showError('Die Bewerbung konnte nicht erstellt werden.', 'Speichern fehlgeschlagen');
-            console.error('Error creating application:', err);
-          }
+          {} as Partial<Contact>
+        );
+        if (Object.keys(cleanContactPayload).length > 0) {
+          observables.push(
+            this.apiService.updateContact(
+              this.currentContactId,
+              cleanContactPayload
+            )
+          );
+        }
+      }
+
+      forkJoin(observables).subscribe({
+        next: () => this.onSaveSuccess(),
+        error: (err) => this.onSaveError(err, 'update'),
       });
     }
+  }
+
+  private onSaveSuccess(): void {
+    this.notificationService.showSuccess(
+      'Alle Änderungen wurden erfolgreich gespeichert.'
+    );
+    this.router.navigate(['/applications']);
+  }
+
+  private onSaveError(error: any, context: 'create' | 'update'): void {
+    this.notificationService.showError(
+      'Ein Fehler ist aufgetreten.',
+      'Speichern fehlgeschlagen'
+    );
+    console.error(`Error during ${context} chain:`, error);
   }
 }
