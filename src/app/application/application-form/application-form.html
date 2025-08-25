@@ -69,6 +69,10 @@
             Beworben am <span class="required-asterisk">*</span>
           </label>
           <input id="applied_on" type="date" formControlName="applied_on" />
+          @if (applicationForm.get('applied_on')?.invalid &&
+          applicationForm.get('applied_on')?.touched) {
+          <div class="error">Bitte geben Sie das Bewerbungsdatum ein.</div>
+          }
         </div>
         }
 
@@ -79,6 +83,10 @@
             Interview am <span class="required-asterisk">*</span>
           </label>
           <input id="interview_on" type="date" formControlName="interview_on" />
+          @if (applicationForm.get('interview_on')?.invalid &&
+          applicationForm.get('interview_on')?.touched) {
+          <div class="error">Bitte geben Sie das Interview-Datum ein.</div>
+          }
         </div>
         }
 
@@ -89,6 +97,10 @@
             Angebot erhalten am <span class="required-asterisk">*</span>
           </label>
           <input id="offer_on" type="date" formControlName="offer_on" />
+          @if (applicationForm.get('offer_on')?.invalid &&
+          applicationForm.get('offer_on')?.touched) {
+          <div class="error">Bitte geben Sie das Angebotsdatum ein.</div>
+          }
         </div>
         }
 
@@ -99,9 +111,13 @@
             Abgelehnt am <span class="required-asterisk">*</span>
           </label>
           <input id="rejected_on" type="date" formControlName="rejected_on" />
+          @if (applicationForm.get('rejected_on')?.invalid &&
+          applicationForm.get('rejected_on')?.touched) {
+          <div class="error">Bitte geben Sie das Ablehnungsdatum ein.</div>
+          }
         </div>
         }
-        
+
         <!-- Nachhaken am (optionales Feld) -->
         <div class="form-group">
           <label for="follow_up_on">Nachhaken am</label>

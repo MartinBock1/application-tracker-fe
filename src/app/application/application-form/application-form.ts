@@ -71,7 +71,7 @@ export class ApplicationForm implements OnInit {
   isEditMode = false;
   currentContactId: number | null = null;
 
-  /** 
+  /**
    * The main reactive form group.
    * @remarks It is declared as definitely assigned (`!`) because it is initialized
    * immediately in `ngOnInit` via the `createForm` method.
@@ -83,14 +83,29 @@ export class ApplicationForm implements OnInit {
    * and checking route parameters to determine if it's in edit mode.
    */
   ngOnInit(): void {
+    // this.createForm();
+    // this.apiService.getCompanies().subscribe((data) => {
+    //   this.companies = data;
+    // });
+
+    // const id = this.route.snapshot.paramMap.get('id');
+    // if (id) {
+    //   this.isEditMode = true;
+    //   this.currentApplicationId = id;
+    //   this.loadApplicationForEdit(id);
+    // }
+
+    const id = this.route.snapshot.paramMap.get('id');
+    this.isEditMode = !!id;
+
     this.createForm();
+    this.setupConditionalValidation();
+
     this.apiService.getCompanies().subscribe((data) => {
       this.companies = data;
     });
 
-    const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.isEditMode = true;
       this.currentApplicationId = id;
       this.loadApplicationForEdit(id);
     }
@@ -105,26 +120,55 @@ export class ApplicationForm implements OnInit {
   private createForm(): void {
     this.applicationForm = this.fb.group({
       job_title: ['', Validators.required],
-      company_id: [{ value: null as number | null, disabled: this.isEditMode }, Validators.required],
+      company_id: [
+        { value: null as number | null, disabled: this.isEditMode },
+        Validators.required,
+      ],
       status: ['DRAFT' as ApplicationStatus | null, Validators.required],
       applied_on: [null as string | null],
       interview_on: [null as string | null],
       offer_on: [null as string | null],
       rejected_on: [null as string | null],
       follow_up_on: [null as string | null],
-      notes: this.fb.array([]),
-      details: this.fb.group({
-        company: this.fb.group({
-          name: ['', Validators.required],
-          industry: ['', Validators.required],
-          website: [''],
-        }),
-        contact: this.fb.group(
-          { id: [null], first_name: [''], last_name: [''], email: ['', [Validators.email]], position: [''], phone: [''] },
-          { validators: contactRequiredValidator }
-        ),
-      }),
+      // notes: this.fb.array([]),
+      //   details: this.fb.group({
+      //     company: this.fb.group({
+      //       name: ['', Validators.required],
+      //       industry: ['', Validators.required],
+      //       website: [''],
+      //     }),
+      //     contact: this.fb.group(
+      //       { id: [null], first_name: [''], last_name: [''], email: ['', [Validators.email]], position: [''], phone: [''] },
+      //       { validators: contactRequiredValidator }
+      //     ),
+      //   }),
     });
+    if (this.isEditMode) {
+      this.applicationForm.addControl('notes', this.fb.array([]));
+      this.applicationForm.addControl(
+        'details',
+        this.fb.group({
+          company: this.fb.group({
+            name: ['', Validators.required],
+            industry: ['', Validators.required],
+            website: [''],
+          }),
+          contact: this.fb.group(
+            {
+              id: [null],
+              first_name: [''],
+              last_name: [''],
+              email: ['', [Validators.email]],
+              position: [''],
+              phone: [''],
+            },
+            { validators: contactRequiredValidator }
+          ),
+        })
+      );
+      // Im Bearbeitungsmodus ist das Dropdown für die Firma deaktiviert
+      this.applicationForm.get('company_id')?.disable();
+    }
   }
 
   /**
@@ -135,34 +179,96 @@ export class ApplicationForm implements OnInit {
   }
 
   /**
-   * Fetches the data for a specific application and populates the form.
-   * This method uses a robust "destroy and recreate" pattern for the form
-   * to guarantee a clean state and prevent "stale state" (ghost data) issues
-   * when navigating between different application edit pages.
-   * @param id - The ID of the application to load.
+   * Sets up dynamic validation rules for date fields based on the selected status.
+   * If a status implies a specific date (e.g., APPLIED implies applied_on),
+   * that date field becomes required.
+   * @private
+   */
+  private setupConditionalValidation(): void {
+    this.applicationForm.get('status')?.valueChanges.subscribe(status => {
+      const appliedOn = this.applicationForm.get('applied_on');
+      const interviewOn = this.applicationForm.get('interview_on');
+      const offerOn = this.applicationForm.get('offer_on');
+      const rejectedOn = this.applicationForm.get('rejected_on');
+
+      // Helper function to update validators
+      const updateValidators = (control: AbstractControl | null, required: boolean) => {
+        if (!control) return;
+        control.clearValidators();
+        if (required) {
+          control.setValidators(Validators.required);
+        }
+        control.updateValueAndValidity();
+      };
+
+      // Set applied_on required if status is APPLIED
+      updateValidators(appliedOn, status === 'APPLIED');
+
+      // Set interview_on required if status is INTERVIEW
+      updateValidators(interviewOn, status === 'INTERVIEW');
+
+      // Set offer_on required if status is OFFER
+      updateValidators(offerOn, status === 'OFFER');
+
+      // Set rejected_on required if status is REJECTED
+      updateValidators(rejectedOn, status === 'REJECTED');
+      
+      // Ensure follow_up_on remains optional
+      this.applicationForm.get('follow_up_on')?.clearValidators();
+      this.applicationForm.get('follow_up_on')?.updateValueAndValidity();
+
+      // For all other controls (DRAFT, WITHDRAWN), ensure no date is required
+    });
+
+    // Run once on initialization to set the initial state based on the current value
+    this.applicationForm.get('status')?.updateValueAndValidity();
+  }
+
+  /**
+   * Fetches the data for a specific application and populates the form for editing.
+   *
+   * This method is called when the component initializes in "edit mode". It uses the
+   * provided application ID to retrieve the complete application object from the API.
+   * It then populates the main form and all nested form groups (company, contact)
+   * and the notes FormArray with the fetched data.
+   *
+   * @param id The unique identifier of the application to load into the form.
+   * @remarks
+   * This method assumes that the `applicationForm` has already been constructed
+   * with the correct structure for editing (including `details` and `notes` controls).
+   * Its sole responsibility is to fill this structure with data.
    */
   loadApplicationForEdit(id: string): void {
-    // 1. Destroy the old form and create a clean new one.
-    this.createForm();
+    // Reset the component's state for the contact.
     this.currentContactId = null;
-    this.applicationForm.get('company_id')?.disable();
 
-    // 2. Fetch the application data from the API.
+    // Fetch the complete application data from the API.
     this.apiService.getApplicationById(id).subscribe({
       next: (application) => {
-        // 3. Populate the clean form with the exact data from the API response.
+        // 1. Populate the top-level form controls with data from the API response.
         this.applicationForm.patchValue(application);
-        this.applicationForm.get('company_id')?.setValue(application.company.id, { emitEvent: false });
-        this.applicationForm.get('details.company')?.patchValue(application.company);
-        
-        this.notes.clear();
-        application.notes.forEach(note => this.notes.push(this.fb.group({ id: note.id, text: note.text })));
 
-        // 4. The single source of truth for the contact is `application.contact`.
-        //    No "intelligent" secondary lookups are performed.
+        // 2. Manually set the value for the disabled company_id dropdown and the nested company form group.
+        this.applicationForm
+          .get('company_id')
+          ?.setValue(application.company.id, { emitEvent: false });
+        this.applicationForm
+          .get('details.company')
+          ?.patchValue(application.company);
+
+        // 3. Clear any existing notes and repopulate the FormArray.
+        this.notes.clear();
+        application.notes.forEach((note) =>
+          this.notes.push(this.fb.group({ id: note.id, text: note.text }))
+        );
+
+        // 4. Populate the contact details. The `application.contact` property from the API
+        //    is treated as the single source of truth to ensure data consistency.
         if (application.contact) {
           this.currentContactId = application.contact.id;
-          this.applicationForm.get('details.contact')?.patchValue(application.contact);
+          this.applicationForm
+            .get('details.contact')
+            ?.patchValue(application.contact);
         }
       },
       error: (err: any) => this.onSaveError(err, 'load'),
@@ -173,7 +279,9 @@ export class ApplicationForm implements OnInit {
    * Adds a new, empty note group to the 'notes' FormArray.
    */
   onAddNote(): void {
-    this.notes.push(this.fb.group({ id: [null], text: ['', Validators.required] }));
+    this.notes.push(
+      this.fb.group({ id: [null], text: ['', Validators.required] })
+    );
   }
 
   /**
@@ -182,36 +290,101 @@ export class ApplicationForm implements OnInit {
    */
   onDeleteNote(index: number): void {
     this.notes.removeAt(index);
-  }  
+  }
 
   /**
    * Orchestrates the form submission process.
    * It validates the form and then delegates the save logic to the appropriate
    * private handler based on whether a new contact needs to be created.
    */
+  // public onSubmit(): void {
+  //   if (this.applicationForm.invalid) {
+  //     this.applicationForm.markAllAsTouched();
+  //     this.notificationService.showWarning('Please fill out all required fields correctly.', 'Invalid Input');
+  //     return;
+  //   }
+
+  //   const formValue = this.applicationForm.getRawValue();
+  //   if (!this.isEditMode || !this.currentApplicationId) { return; }
+
+  //   const contactData = this.applicationForm.get('details.contact')?.value;
+  //   const contactFormHasData = contactData?.first_name && contactData?.last_name;
+  //   const shouldCreateContact = !this.currentContactId && contactFormHasData;
+
+  //   const operation$ = shouldCreateContact
+  //     ? this.handleCreateContactAndUpdates(formValue, contactData)
+  //     : this.handleUpdates(formValue, contactData, contactFormHasData);
+
+  //   operation$.subscribe({
+  //     next: () => this.onSaveSuccess(),
+  //     error: (err: any) => this.onSaveError(err, 'update'), // Korrigierter Kontext
+  //   });
+  // }
   public onSubmit(): void {
     if (this.applicationForm.invalid) {
       this.applicationForm.markAllAsTouched();
-      this.notificationService.showWarning('Please fill out all required fields correctly.', 'Invalid Input');
+      this.notificationService.showWarning(
+        'Please fill out all required fields correctly.',
+        'Invalid Input'
+      );
       return;
     }
 
     const formValue = this.applicationForm.getRawValue();
-    if (!this.isEditMode || !this.currentApplicationId) { return; }
 
-    const contactData = this.applicationForm.get('details.contact')?.value;
-    const contactFormHasData = contactData?.first_name && contactData?.last_name;
-    const shouldCreateContact = !this.currentContactId && contactFormHasData;
+    // --- LOGIK FÜR DEN BEARBEITUNGSMODUS ---
+    if (this.isEditMode) {
+      if (!this.currentApplicationId) {
+        console.error('Edit mode is active, but no application ID is present.');
+        this.notificationService.showError(
+          'Cannot save changes, application ID is missing.',
+          'Error'
+        );
+        return;
+      }
 
-    const operation$ = shouldCreateContact
-      ? this.handleCreateContactAndUpdates(formValue, contactData)
-      : this.handleUpdates(formValue, contactData, contactFormHasData);
+      const contactData = this.applicationForm.get('details.contact')?.value;
+      const contactFormHasData =
+        contactData?.first_name && contactData?.last_name;
+      const shouldCreateContact = !this.currentContactId && contactFormHasData;
 
-    operation$.subscribe({
-      next: () => this.onSaveSuccess(),
-      error: (err: any) => this.onSaveError(err, 'update'), // Korrigierter Kontext
-    });
-  }
+      const operation$ = shouldCreateContact
+        ? this.handleCreateContactAndUpdates(formValue, contactData)
+        : this.handleUpdates(formValue, contactData, contactFormHasData);
+
+      operation$.subscribe({
+        next: () => this.onSaveSuccess(),
+        error: (err: any) => this.onSaveError(err, 'update'),
+      });
+    }
+    // --- NEUE LOGIK FÜR DEN ERSTELLUNGSMODUS ---
+    else {
+      // Annahme: Ihr Api-Service hat eine Methode `createApplication`.
+      // Wir erstellen das Payload direkt aus den Formulardaten.
+      const payload: CreateApplicationPayload = {
+        job_title: formValue.job_title,
+        company_id: formValue.company_id,
+        status: formValue.status,
+        applied_on: formValue.applied_on || null,
+        interview_on: formValue.interview_on || null,
+        offer_on: formValue.offer_on || null,
+        rejected_on: formValue.rejected_on || null,
+        follow_up_on: formValue.follow_up_on || null,
+        contact_id: null, // Im Erstellmodus gibt es kein Kontaktformular
+        // notes: [], // Im Erstellmodus gibt es kein Notizformular
+      };
+
+      this.apiService.createApplication(payload).subscribe({
+        next: () => {
+          this.notificationService.showSuccess(
+            'Application created successfully.'
+          );
+          this.router.navigate(['/applications']);
+        },
+        error: (err: any) => this.onSaveError(err, 'create'),
+      });
+    }
+  } 
 
   /**
    * Handles the workflow for creating a new contact and then updating the application and company.
@@ -222,17 +395,32 @@ export class ApplicationForm implements OnInit {
    * @returns An Observable that completes when all operations are finished.
    * @private
    */
-  private handleCreateContactAndUpdates(formValue: any, contactData: any): Observable<any> {
-    const createContactPayload = this.buildCreateContactPayload(formValue, contactData);
+  private handleCreateContactAndUpdates(
+    formValue: any,
+    contactData: any
+  ): Observable<any> {
+    const createContactPayload = this.buildCreateContactPayload(
+      formValue,
+      contactData
+    );
 
     return this.apiService.createContact(createContactPayload).pipe(
-      switchMap(newContact => {
-        const applicationPayload = this.buildApplicationPayload(formValue, newContact.id);
+      switchMap((newContact) => {
+        const applicationPayload = this.buildApplicationPayload(
+          formValue,
+          newContact.id
+        );
         const companyPayload = this.buildCompanyPayload(formValue);
-        
+
         return forkJoin({
-          application: this.apiService.updateApplication(this.currentApplicationId!, applicationPayload),
-          company: this.apiService.updateCompany(formValue.company_id!, companyPayload),
+          application: this.apiService.updateApplication(
+            this.currentApplicationId!,
+            applicationPayload
+          ),
+          company: this.apiService.updateCompany(
+            formValue.company_id!,
+            companyPayload
+          ),
         });
       })
     );
@@ -248,9 +436,14 @@ export class ApplicationForm implements OnInit {
    * @returns An Observable that completes when all operations are finished.
    * @private
    */
-  private handleUpdates(formValue: any, contactData: any, contactFormHasData: boolean): Observable<any> {
+  private handleUpdates(
+    formValue: any,
+    contactData: any,
+    contactFormHasData: boolean
+  ): Observable<any> {
     const observables = [];
-    let contactIdForApplication: number | null | undefined = this.currentContactId;
+    let contactIdForApplication: number | null | undefined =
+      this.currentContactId;
 
     if (this.currentContactId) {
       if (!contactFormHasData) {
@@ -259,19 +452,34 @@ export class ApplicationForm implements OnInit {
       } else {
         const cleanContactPayload = this.buildUpdateContactPayload(contactData);
         if (Object.keys(cleanContactPayload).length > 0) {
-          observables.push(this.apiService.updateContact(this.currentContactId, cleanContactPayload));
+          observables.push(
+            this.apiService.updateContact(
+              this.currentContactId,
+              cleanContactPayload
+            )
+          );
         }
       }
     }
 
     // Always prepare to update the application itself.
-    const applicationPayload = this.buildApplicationPayload(formValue, contactIdForApplication);
-    observables.push(this.apiService.updateApplication(this.currentApplicationId!, applicationPayload));
+    const applicationPayload = this.buildApplicationPayload(
+      formValue,
+      contactIdForApplication
+    );
+    observables.push(
+      this.apiService.updateApplication(
+        this.currentApplicationId!,
+        applicationPayload
+      )
+    );
 
     // Always prepare to update the company.
     const companyPayload = this.buildCompanyPayload(formValue);
-    observables.push(this.apiService.updateCompany(formValue.company_id!, companyPayload));
-    
+    observables.push(
+      this.apiService.updateCompany(formValue.company_id!, companyPayload)
+    );
+
     return forkJoin(observables);
   }
 
@@ -279,7 +487,10 @@ export class ApplicationForm implements OnInit {
    * A helper function to build a clean payload for updating an existing contact by removing empty fields.
    * @private
    */
-  private buildCreateContactPayload(formValue: any, contactData: any): CreateContactPayload {
+  private buildCreateContactPayload(
+    formValue: any,
+    contactData: any
+  ): CreateContactPayload {
     const payload: CreateContactPayload = {
       first_name: contactData.first_name!,
       last_name: contactData.last_name!,
@@ -297,24 +508,31 @@ export class ApplicationForm implements OnInit {
    */
   private buildUpdateContactPayload(contactData: any): Partial<Contact> {
     const { id, ...payload } = contactData;
-    return Object.entries(payload).reduce(
-      (acc, [key, value]) => {
-        if (value) (acc as any)[key] = value;
-        return acc;
-      }, {} as Partial<Contact>);
+    return Object.entries(payload).reduce((acc, [key, value]) => {
+      if (value) (acc as any)[key] = value;
+      return acc;
+    }, {} as Partial<Contact>);
   }
 
   /**
    * A helper function to build the payload for updating the application.
    * @private
    */
-  private buildApplicationPayload(formValue: any, contactId: number | null | undefined): CreateApplicationPayload {
+  private buildApplicationPayload(
+    formValue: any,
+    contactId: number | null | undefined
+  ): CreateApplicationPayload {
     return {
       job_title: formValue.job_title!,
       company_id: formValue.company_id!,
       contact_id: contactId,
       status: formValue.status!,
       notes: formValue.notes as any,
+      applied_on: formValue.applied_on || null,
+      interview_on: formValue.interview_on || null,
+      offer_on: formValue.offer_on || null,
+      rejected_on: formValue.rejected_on || null,
+      follow_up_on: formValue.follow_up_on || null,
     };
   }
 
@@ -336,7 +554,9 @@ export class ApplicationForm implements OnInit {
    * @private
    */
   private onSaveSuccess(): void {
-    this.notificationService.showSuccess('Alle Änderungen wurden erfolgreich gespeichert.');
+    this.notificationService.showSuccess(
+      'Alle Änderungen wurden erfolgreich gespeichert.'
+    );
     this.router.navigate(['/applications']);
   }
 
@@ -347,11 +567,14 @@ export class ApplicationForm implements OnInit {
    * @private
    */
   private onSaveError(error: any, context: 'create' | 'update' | 'load'): void {
-    const message = context === 'load' ? 'Die Bewerbungsdetails konnten nicht geladen werden.' : 'Ein Fehler ist aufgetreten.';
+    const message =
+      context === 'load'
+        ? 'Die Bewerbungsdetails konnten nicht geladen werden.'
+        : 'Ein Fehler ist aufgetreten.';
     this.notificationService.showError(message, 'Fehler');
     console.error(`Error during ${context} chain:`, error);
     if (context === 'load') {
-        this.router.navigate(['/applications']);
+      this.router.navigate(['/applications']);
     }
   }
 }
