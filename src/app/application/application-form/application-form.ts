@@ -12,17 +12,19 @@ import {
   FormGroup,
 } from '@angular/forms';
 
-import { forkJoin, of, Observable } from 'rxjs';
+import { forkJoin, of, Observable, throwError } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { Api } from '../../services/api';
 import { NotificationService } from '../../services/notification';
 import {
+  Application,
   ApplicationStatus,
   Company,
   Contact,
   CreateApplicationPayload,
   CreateContactPayload,
+  Note,
 } from '../../models/api-interfaces';
 
 /**
@@ -45,10 +47,10 @@ export const contactRequiredValidator: ValidatorFn = (
 /**
  * Component for creating and editing job applications.
  *
- * This component handles the logic for a comprehensive form that allows users to
- * create new applications or edit existing ones. It manages nested data for
- * companies, contacts, and notes, and includes robust state management to prevent
- * data leaks between different application views.
+ * This component handles a comprehensive form that allows users to create new applications
+ * or edit existing ones. It manages the component's state (create vs. edit mode),
+ * handles dynamic form controls, and orchestrates complex, multi-step API operations
+ * for saving data, including nested entities like companies, contacts, and notes.
  */
 @Component({
   selector: 'app-application-form',
@@ -67,52 +69,75 @@ export class ApplicationForm implements OnInit {
 
   // --- COMPONENT STATE ---
   companies: Company[] = [];
+  contactsForSelectedCompany: Contact[] = [];
   currentApplicationId: string | null = null;
   isEditMode = false;
   currentContactId: number | null = null;
-
-  /**
-   * The main reactive form group.
-   * @remarks It is declared as definitely assigned (`!`) because it is initialized
-   * immediately in `ngOnInit` via the `createForm` method.
-   */
   applicationForm!: FormGroup;
 
+  // =================================================================================
+  // LIFECYCLE & INITIALIZATION
+  // =================================================================================
+
   /**
-   * Initializes the component by creating the form, fetching company data,
-   * and checking route parameters to determine if it's in edit mode.
+   * Initializes the component by determining the mode (create/edit),
+   * creating the form, setting up dynamic validation, and loading necessary data.
    */
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    this.isEditMode = !!id;
+    this.isEditMode = !!this.route.snapshot.paramMap.get('id');
+    this.currentApplicationId = this.route.snapshot.paramMap.get('id');
 
     this.createForm();
     this.setupConditionalValidation();
+    this.loadInitialData();
+  }
 
+  /**
+   * Orchestrates the loading of data required on component initialization.
+   * Loads companies for the dropdown, and if in edit mode, loads the application details.
+   * @private
+   */
+  private loadInitialData(): void {
     this.apiService.getCompanies().subscribe((data) => {
       this.companies = data;
     });
 
-    if (id) {
-      this.currentApplicationId = id;
-      this.loadApplicationForEdit(id);
+    if (this.isEditMode && this.currentApplicationId) {
+      this.loadApplicationForEdit(this.currentApplicationId);
+    } else {
+      this.listenForCompanyChanges();
+    }
+  }
+
+  // =================================================================================
+  // FORM CREATION & STRUCTURE
+  // =================================================================================
+
+  /**
+   * Orchestrates the creation of the main reactive form based on the component mode.
+   * Delegates a large portion of the structural definition to helper methods.
+   * @private
+   */
+  private createForm(): void {
+    this.applicationForm = this.initializeBaseFormGroup();
+
+    if (this.isEditMode) {
+      this.addControlsForEditMode();
+    } else {
+      this.addControlsForCreateMode();
     }
   }
 
   /**
-   * Creates and initializes the main reactive form.
-   * This method encapsulates the form structure and is called to ensure a clean
-   * form state, preventing data leaks between views.
+   * Initializes the base structure of the `applicationForm` with common fields.
+   * @returns The base FormGroup instance.
    * @private
    */
-  private createForm(): void {
-    this.applicationForm = this.fb.group({
+  private initializeBaseFormGroup(): FormGroup {
+    return this.fb.group({
       job_title: ['', Validators.required],
       salary_expectation: [null as number | null],
-      company_id: [
-        { value: null as number | null, disabled: this.isEditMode },
-        Validators.required,
-      ],
+      company_id: ['', Validators.required],
       status: ['DRAFT' as ApplicationStatus | null, Validators.required],
       applied_on: [null as string | null],
       interview_on: [null as string | null],
@@ -120,31 +145,51 @@ export class ApplicationForm implements OnInit {
       rejected_on: [null as string | null],
       follow_up_on: [null as string | null],
     });
-    if (this.isEditMode) {
-      this.applicationForm.addControl('notes', this.fb.array([]));
-      this.applicationForm.addControl(
-        'details',
-        this.fb.group({
-          company: this.fb.group({
-            name: ['', Validators.required],
-            industry: ['', Validators.required],
-            website: [''],
-          }),
-          contact: this.fb.group(
-            {
-              id: [null],
-              first_name: [''],
-              last_name: [''],
-              email: ['', [Validators.email]],
-              position: [''],
-              phone: [''],
-            },
-            { validators: contactRequiredValidator }
-          ),
-        })
-      );
-      this.applicationForm.get('company_id')?.disable();
-    }
+  }
+
+  /**
+   * Adds form controls specific to the 'create' mode.
+   * @private
+   */
+  private addControlsForCreateMode(): void {
+    this.applicationForm.addControl('contact_id', this.fb.control(null));
+  }
+
+  /**
+   * Adds complex, nested form controls specific to the 'edit' mode.
+   * Disables the company selection dropdown in edit mode.
+   * @private
+   */
+  private addControlsForEditMode(): void {
+    this.applicationForm.addControl('notes', this.fb.array([]));
+    this.applicationForm.addControl('details', this.buildDetailsFormGroup());
+    this.applicationForm.get('company_id')?.disable();
+  }
+
+  /**
+   * Builds the nested 'details' FormGroup used in edit mode.
+   * @returns The FormGroup containing company and contact details subsections.
+   * @private
+   */
+  private buildDetailsFormGroup(): FormGroup {
+    return this.fb.group({
+      company: this.fb.group({
+        name: ['', Validators.required],
+        industry: ['', Validators.required],
+        website: [''],
+      }),
+      contact: this.fb.group(
+        {
+          id: [null],
+          first_name: [''],
+          last_name: [''],
+          email: ['', [Validators.email]],
+          position: [''],
+          phone: [''],
+        },
+        { validators: contactRequiredValidator }
+      ),
+    });
   }
 
   /**
@@ -154,102 +199,138 @@ export class ApplicationForm implements OnInit {
     return this.applicationForm.get('notes') as FormArray;
   }
 
-  /**
-   * Sets up dynamic validation rules for date fields based on the selected status.
-   * If a status implies a specific date (e.g., APPLIED implies applied_on),
-   * that date field becomes required.
-   * @private
-   */
-  private setupConditionalValidation(): void {
-    this.applicationForm.get('status')?.valueChanges.subscribe(status => {
-      const appliedOn = this.applicationForm.get('applied_on');
-      const interviewOn = this.applicationForm.get('interview_on');
-      const offerOn = this.applicationForm.get('offer_on');
-      const rejectedOn = this.applicationForm.get('rejected_on');
-
-      // Helper function to update validators
-      const updateValidators = (control: AbstractControl | null, required: boolean) => {
-        if (!control) return;
-        control.clearValidators();
-        if (required) {
-          control.setValidators(Validators.required);
-        }
-        control.updateValueAndValidity();
-      };
-
-      // Set applied_on required if status is APPLIED
-      updateValidators(appliedOn, status === 'APPLIED');
-
-      // Set interview_on required if status is INTERVIEW
-      updateValidators(interviewOn, status === 'INTERVIEW');
-
-      // Set offer_on required if status is OFFER
-      updateValidators(offerOn, status === 'OFFER');
-
-      // Set rejected_on required if status is REJECTED
-      updateValidators(rejectedOn, status === 'REJECTED');
-      
-      // Ensure follow_up_on remains optional
-      this.applicationForm.get('follow_up_on')?.clearValidators();
-      this.applicationForm.get('follow_up_on')?.updateValueAndValidity();
-
-      // For all other controls (DRAFT, WITHDRAWN), ensure no date is required
-    });
-
-    // Run once on initialization to set the initial state based on the current value
-    this.applicationForm.get('status')?.updateValueAndValidity();
-  }
+  // =================================================================================
+  // DYNAMIC FORM LOGIC & DATA LOADING
+  // =================================================================================
 
   /**
-   * Fetches the data for a specific application and populates the form for editing.
-   *
-   * This method is called when the component initializes in "edit mode". It uses the
-   * provided application ID to retrieve the complete application object from the API.
-   * It then populates the main form and all nested form groups (company, contact)
-   * and the notes FormArray with the fetched data.
-   *
-   * @param id The unique identifier of the application to load into the form.
-   * @remarks
-   * This method assumes that the `applicationForm` has already been constructed
-   * with the correct structure for editing (including `details` and `notes` controls).
-   * Its sole responsibility is to fill this structure with data.
+   * Fetches application data and populates the form for editing.
+   * @param id - The unique identifier of the application to load.
    */
   loadApplicationForEdit(id: string): void {
-    // Reset the component's state for the contact.
-    this.currentContactId = null;
-
-    // Fetch the complete application data from the API.
     this.apiService.getApplicationById(id).subscribe({
-      next: (application) => {
-        // 1. Populate the top-level form controls with data from the API response.
-        this.applicationForm.patchValue(application);
-
-        // 2. Manually set the value for the disabled company_id dropdown and the nested company form group.
-        this.applicationForm
-          .get('company_id')
-          ?.setValue(application.company.id, { emitEvent: false });
-        this.applicationForm
-          .get('details.company')
-          ?.patchValue(application.company);
-
-        // 3. Clear any existing notes and repopulate the FormArray.
-        this.notes.clear();
-        application.notes.forEach((note) =>
-          this.notes.push(this.fb.group({ id: note.id, text: note.text }))
-        );
-
-        // 4. Populate the contact details. The `application.contact` property from the API
-        //    is treated as the single source of truth to ensure data consistency.
-        if (application.contact) {
-          this.currentContactId = application.contact.id;
-          this.applicationForm
-            .get('details.contact')
-            ?.patchValue(application.contact);
-        }
-      },
+      next: (application) => this.populateFormWithData(application),
       error: (err: any) => this.onSaveError(err, 'load'),
     });
   }
+
+  /**
+   * Populates all form fields with data from the fetched application object.
+   * Delegates note population to a specialized helper method.
+   * @param application - The application data object from the API.
+   * @private
+   */
+  private populateFormWithData(application: Application): void {
+    // 1. Reset state and patch top-level values
+    this.currentContactId = null;
+    this.applicationForm.patchValue(application);
+
+    // 2. Set company details (main ID and nested group)
+    this.applicationForm
+      .get('company_id')
+      ?.setValue(application.company.id, { emitEvent: false });
+    this.applicationForm
+      .get('details.company')
+      ?.patchValue(application.company);
+
+    // 3. Populate nested contact details if they exist
+    if (application.contact) {
+      this.currentContactId = application.contact.id;
+      this.applicationForm
+        .get('details.contact')
+        ?.patchValue(application.contact);
+    }
+
+    // 4. Populate notes array
+    this.populateNotesArray(application.notes);
+  }
+
+  /**
+   * Clears and repopulates the notes FormArray with data.
+   * @param notesData - The array of note objects from the application data.
+   * @private
+   */
+  private populateNotesArray(notesData: Note[]): void {
+    this.notes.clear();
+    notesData.forEach((note) => {
+      this.notes.push(this.fb.group({ id: note.id, text: note.text }));
+    });
+  }
+
+  /**
+   * Sets up an observable stream on the `company_id` field to dynamically
+   * load associated contacts when a company is selected in create mode.
+   * @private
+   */
+  private listenForCompanyChanges(): void {
+    this.applicationForm
+      .get('company_id')
+      ?.valueChanges.subscribe((companyId) => {
+        this.contactsForSelectedCompany = [];
+        this.applicationForm.get('contact_id')?.setValue(null);
+        if (companyId) {
+          this.loadContactsForCompany(companyId);
+        }
+      });
+  }
+
+  /**
+   * Fetches contacts for a given company ID from the API.
+   * @param companyId - The ID of the selected company.
+   * @private
+   */
+  private loadContactsForCompany(companyId: number): void {
+    this.apiService.getContactsForCompany(companyId).subscribe({
+      next: (contacts) => {
+        this.contactsForSelectedCompany = contacts;
+      },
+      error: (err) => {
+        console.error('Error loading contacts for company:', err);
+        this.notificationService.showError(
+          'Could not load contacts for this company.'
+        );
+      },
+    });
+  }
+
+  /**
+   * Subscribes to `status` field changes to dynamically apply or remove
+   * `Validators.required` on corresponding date fields.
+   * @private
+   */
+  private setupConditionalValidation(): void {
+    this.applicationForm.get('status')?.valueChanges.subscribe((status) => {
+      const updateValidators = (
+        control: AbstractControl | null,
+        required: boolean
+      ) => {
+        if (!control) return;
+        control.setValidators(required ? Validators.required : null);
+        control.updateValueAndValidity();
+      };
+
+      updateValidators(
+        this.applicationForm.get('applied_on'),
+        status === 'APPLIED'
+      );
+      updateValidators(
+        this.applicationForm.get('interview_on'),
+        status === 'INTERVIEW'
+      );
+      updateValidators(
+        this.applicationForm.get('offer_on'),
+        status === 'OFFER'
+      );
+      updateValidators(
+        this.applicationForm.get('rejected_on'),
+        status === 'REJECTED'
+      );
+    });
+  }
+
+  // =================================================================================
+  // FORM ACTIONS (NOTES)
+  // =================================================================================
 
   /**
    * Adds a new, empty note group to the 'notes' FormArray.
@@ -261,17 +342,20 @@ export class ApplicationForm implements OnInit {
   }
 
   /**
-   * Removes a note from the 'notes' FormArray at a specific index.
+   * Removes a note from the 'notes' FormArray at a given index.
    * @param index - The index of the note to remove.
    */
   onDeleteNote(index: number): void {
     this.notes.removeAt(index);
   }
 
+  // =================================================================================
+  // FORM SUBMISSION ORCHESTRATION
+  // =================================================================================
+
   /**
-   * Orchestrates the form submission process.
-   * It validates the form and then delegates the save logic to the appropriate
-   * private handler based on whether a new contact needs to be created.
+   * Main submission handler. Validates the form and delegates the save logic
+   * to the appropriate handler based on the component's mode (create or edit).
    */
   public onSubmit(): void {
     if (this.applicationForm.invalid) {
@@ -283,67 +367,62 @@ export class ApplicationForm implements OnInit {
       return;
     }
 
+    const operation$ = this.isEditMode
+      ? this.handleUpdateApplication()
+      : this.handleCreateApplication();
+
+    operation$.subscribe({
+      next: () => this.onSaveSuccess(),
+      error: (err: any) =>
+        this.onSaveError(err, this.isEditMode ? 'update' : 'create'),
+    });
+  }
+
+  /**
+   * Orchestrates the creation of a new application by building the payload and calling the API service.
+   * @returns An Observable that emits the created application.
+   * @private
+   */
+  private handleCreateApplication(): Observable<Application> {
     const formValue = this.applicationForm.getRawValue();
+    const payload = this.buildCreateApplicationPayload(formValue);
+    return this.apiService.createApplication(payload);
+  }
 
-    // --- LOGIK FÜR DEN BEARBEITUNGSMODUS ---
-    if (this.isEditMode) {
-      if (!this.currentApplicationId) {
-        console.error('Edit mode is active, but no application ID is present.');
-        this.notificationService.showError(
-          'Cannot save changes, application ID is missing.',
-          'Error'
-        );
-        return;
-      }
-
-      const contactData = this.applicationForm.get('details.contact')?.value;
-      const contactFormHasData =
-        contactData?.first_name && contactData?.last_name;
-      const shouldCreateContact = !this.currentContactId && contactFormHasData;
-
-      const operation$ = shouldCreateContact
-        ? this.handleCreateContactAndUpdates(formValue, contactData)
-        : this.handleUpdates(formValue, contactData, contactFormHasData);
-
-      operation$.subscribe({
-        next: () => this.onSaveSuccess(),
-        error: (err: any) => this.onSaveError(err, 'update'),
-      });
+  /**
+   * Orchestrates the update of an existing application and its related data.
+   * It handles the complex logic of determining whether to update, create, or delete a contact.
+   * @returns An Observable that completes when all API calls are finished.
+   * @private
+   */
+  private handleUpdateApplication(): Observable<any> {
+    if (!this.currentApplicationId) {
+      const error = 'Edit mode is active, but no application ID is present.';
+      console.error(error);
+      this.notificationService.showError(
+        'Cannot save changes, application ID is missing.',
+        'Error'
+      );
+      return throwError(() => new Error(error));
     }
-    // --- NEUE LOGIK FÜR DEN ERSTELLUNGSMODUS ---
-    else {
-      // Annahme: Ihr Api-Service hat eine Methode `createApplication`.
-      // Wir erstellen das Payload direkt aus den Formulardaten.
-      const payload: CreateApplicationPayload = {
-        job_title: formValue.job_title,
-        salary_expectation: formValue.salary_expectation || null,
-        company_id: formValue.company_id,
-        status: formValue.status,
-        applied_on: formValue.applied_on || null,
-        interview_on: formValue.interview_on || null,
-        offer_on: formValue.offer_on || null,
-        rejected_on: formValue.rejected_on || null,
-        follow_up_on: formValue.follow_up_on || null,
-        contact_id: null, // Im Erstellmodus gibt es kein Kontaktformular
-        // notes: [], // Im Erstellmodus gibt es kein Notizformular
-      };
 
-      this.apiService.createApplication(payload).subscribe({
-        next: () => {
-          this.notificationService.showSuccess(
-            'Application created successfully.'
-          );
-          this.router.navigate(['/applications']);
-        },
-        error: (err: any) => this.onSaveError(err, 'create'),
-      });
-    }
-  } 
+    const formValue = this.applicationForm.getRawValue();
+    const contactData = formValue.details.contact;
+    const contactFormHasData =
+      contactData?.first_name && contactData?.last_name;
+    const shouldCreateContact = !this.currentContactId && contactFormHasData;
+
+    return shouldCreateContact
+      ? this.handleCreateContactAndUpdates(formValue, contactData)
+      : this.handleUpdates(formValue, contactData, contactFormHasData);
+  }
+
+  // =================================================================================
+  // DATA PROCESSING & API PAYLOADS
+  // =================================================================================
 
   /**
    * Handles the workflow for creating a new contact and then updating the application and company.
-   * This uses `switchMap` to ensure the contact is created first to get its ID, which is then
-   * used to link it to the application in the subsequent update.
    * @param formValue - The raw value of the entire form.
    * @param contactData - The data from the contact form group.
    * @returns An Observable that completes when all operations are finished.
@@ -360,7 +439,7 @@ export class ApplicationForm implements OnInit {
 
     return this.apiService.createContact(createContactPayload).pipe(
       switchMap((newContact) => {
-        const applicationPayload = this.buildApplicationPayload(
+        const applicationPayload = this.buildUpdateApplicationPayload(
           formValue,
           newContact.id
         );
@@ -381,13 +460,11 @@ export class ApplicationForm implements OnInit {
   }
 
   /**
-   * Handles the workflow for updating an application and its related data,
-   * including updating or deleting an existing contact. All API calls are run in parallel
-   * using `forkJoin` as they are not dependent on each other.
+   * Handles the workflow for updating an application, company, and existing contact (update or delete).
    * @param formValue - The raw value of the entire form.
    * @param contactData - The data from the contact form group.
    * @param contactFormHasData - A boolean indicating if the contact form is filled out.
-   * @returns An Observable that completes when all operations are finished.
+   * @returns An Observable that completes when all parallel operations are finished.
    * @private
    */
   private handleUpdates(
@@ -416,29 +493,27 @@ export class ApplicationForm implements OnInit {
       }
     }
 
-    // Always prepare to update the application itself.
-    const applicationPayload = this.buildApplicationPayload(
-      formValue,
-      contactIdForApplication
-    );
     observables.push(
       this.apiService.updateApplication(
         this.currentApplicationId!,
-        applicationPayload
+        this.buildUpdateApplicationPayload(formValue, contactIdForApplication)
       )
     );
-
-    // Always prepare to update the company.
-    const companyPayload = this.buildCompanyPayload(formValue);
     observables.push(
-      this.apiService.updateCompany(formValue.company_id!, companyPayload)
+      this.apiService.updateCompany(
+        formValue.company_id!,
+        this.buildCompanyPayload(formValue)
+      )
     );
 
     return forkJoin(observables);
   }
 
   /**
-   * A helper function to build a clean payload for updating an existing contact by removing empty fields.
+   * Builds the payload for creating a new contact from form data.
+   * @param formValue - The raw data from the main form (used to get company_id).
+   * @param contactData - The data specific to the contact from the nested form group.
+   * @returns The payload object for the create contact API endpoint.
    * @private
    */
   private buildCreateContactPayload(
@@ -457,7 +532,9 @@ export class ApplicationForm implements OnInit {
   }
 
   /**
-   * A helper function to build the payload for updating the company.
+   * Builds a clean payload for updating an existing contact by removing empty fields.
+   * @param contactData - The data specific to the contact from the nested form group.
+   * @returns A partial Contact object containing only non-empty fields.
    * @private
    */
   private buildUpdateContactPayload(contactData: any): Partial<Contact> {
@@ -469,10 +546,36 @@ export class ApplicationForm implements OnInit {
   }
 
   /**
-   * A helper function to build the payload for updating the application.
+   * Builds the payload for creating a new application.
+   * @param formValue - The raw data from the main form.
+   * @returns The payload object for the create application API endpoint.
    * @private
    */
-  private buildApplicationPayload(
+  private buildCreateApplicationPayload(
+    formValue: any
+  ): CreateApplicationPayload {
+    return {
+      job_title: formValue.job_title,
+      salary_expectation: formValue.salary_expectation || null,
+      company_id: formValue.company_id,
+      status: formValue.status,
+      applied_on: formValue.applied_on || null,
+      interview_on: formValue.interview_on || null,
+      offer_on: formValue.offer_on || null,
+      rejected_on: formValue.rejected_on || null,
+      follow_up_on: formValue.follow_up_on || null,
+      contact_id: formValue.contact_id || null,
+    };
+  }
+
+  /**
+   * Builds the payload for updating an existing application.
+   * @param formValue - The raw data from the main form.
+   * @param contactId - The final contact ID to associate with the application.
+   * @returns The payload object for the update application API endpoint.
+   * @private
+   */
+  private buildUpdateApplicationPayload(
     formValue: any,
     contactId: number | null | undefined
   ): CreateApplicationPayload {
@@ -492,7 +595,9 @@ export class ApplicationForm implements OnInit {
   }
 
   /**
-   * A helper function to build the payload for updating the company.
+   * Builds the payload for updating the company details.
+   * @param formValue - The raw data from the main form.
+   * @returns A partial Company object.
    * @private
    */
   private buildCompanyPayload(formValue: any): Partial<Company> {
@@ -504,29 +609,34 @@ export class ApplicationForm implements OnInit {
     };
   }
 
+  // =================================================================================
+  // NOTIFICATION & NAVIGATION HANDLERS
+  // =================================================================================
+
   /**
-   * Handles successful save operations by showing a notification and navigating.
+   * Handles successful save operations by showing a success notification and navigating back to the list view.
    * @private
    */
   private onSaveSuccess(): void {
     this.notificationService.showSuccess(
-      'Alle Änderungen wurden erfolgreich gespeichert.'
+      'All changes have been saved successfully.'
     );
     this.router.navigate(['/applications']);
   }
 
   /**
-   * Handles errors that occur during load or save operations.
+   * Handles errors that occur during API operations (load or save).
+   * Displays an error notification and logs the error to the console.
    * @param error - The error object.
-   * @param context - The context in which the error occurred ('create', 'update', or 'load').
+   * @param context - The context ing which the error occurred ('create', 'update', or 'load').
    * @private
    */
   private onSaveError(error: any, context: 'create' | 'update' | 'load'): void {
     const message =
       context === 'load'
-        ? 'Die Bewerbungsdetails konnten nicht geladen werden.'
-        : 'Ein Fehler ist aufgetreten.';
-    this.notificationService.showError(message, 'Fehler');
+        ? 'The application details could not be loaded.'
+        : 'An error occurred while saving.';
+    this.notificationService.showError(message, 'Error');
     console.error(`Error during ${context} chain:`, error);
     if (context === 'load') {
       this.router.navigate(['/applications']);

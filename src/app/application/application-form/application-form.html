@@ -30,10 +30,12 @@
 
         <!-- Gehaltsvorstellung -->
         <div class="form-group">
-          <label for="salary_expectation">
-            Gehaltsvorstellung
-          </label>
-          <input id="salary_expectation" type="text" formControlName="salary_expectation" />
+          <label for="salary_expectation"> Gehaltsvorstellung </label>
+          <input
+            id="salary_expectation"
+            type="text"
+            formControlName="salary_expectation"
+          />
         </div>
 
         <!-- Firmen-Dropdown nur im Erstellmodus anzeigen -->
@@ -48,6 +50,19 @@
             </option>
             @for(company of companies; track company.id) {
             <option [ngValue]="company.id">{{ company.name }}</option>
+            }
+          </select>
+        </div>
+        }
+         @if (contactsForSelectedCompany.length > 0) {
+        <div class="form-group">
+          <label for="contact_id">Kontaktperson (optional)</label>
+          <select id="contact_id" formControlName="contact_id">
+            <option [ngValue]="null">Keine Kontaktperson auswählen</option>
+            @for(contact of contactsForSelectedCompany; track contact.id) {
+            <option [ngValue]="contact.id">
+              {{ contact.first_name }} {{ contact.last_name }}
+            </option>
             }
           </select>
         </div>
