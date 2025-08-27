@@ -83,18 +83,6 @@ export class ApplicationForm implements OnInit {
    * and checking route parameters to determine if it's in edit mode.
    */
   ngOnInit(): void {
-    // this.createForm();
-    // this.apiService.getCompanies().subscribe((data) => {
-    //   this.companies = data;
-    // });
-
-    // const id = this.route.snapshot.paramMap.get('id');
-    // if (id) {
-    //   this.isEditMode = true;
-    //   this.currentApplicationId = id;
-    //   this.loadApplicationForEdit(id);
-    // }
-
     const id = this.route.snapshot.paramMap.get('id');
     this.isEditMode = !!id;
 
@@ -120,6 +108,7 @@ export class ApplicationForm implements OnInit {
   private createForm(): void {
     this.applicationForm = this.fb.group({
       job_title: ['', Validators.required],
+      salary_expectation: [null as number | null],
       company_id: [
         { value: null as number | null, disabled: this.isEditMode },
         Validators.required,
@@ -130,18 +119,6 @@ export class ApplicationForm implements OnInit {
       offer_on: [null as string | null],
       rejected_on: [null as string | null],
       follow_up_on: [null as string | null],
-      // notes: this.fb.array([]),
-      //   details: this.fb.group({
-      //     company: this.fb.group({
-      //       name: ['', Validators.required],
-      //       industry: ['', Validators.required],
-      //       website: [''],
-      //     }),
-      //     contact: this.fb.group(
-      //       { id: [null], first_name: [''], last_name: [''], email: ['', [Validators.email]], position: [''], phone: [''] },
-      //       { validators: contactRequiredValidator }
-      //     ),
-      //   }),
     });
     if (this.isEditMode) {
       this.applicationForm.addControl('notes', this.fb.array([]));
@@ -166,7 +143,6 @@ export class ApplicationForm implements OnInit {
           ),
         })
       );
-      // Im Bearbeitungsmodus ist das Dropdown für die Firma deaktiviert
       this.applicationForm.get('company_id')?.disable();
     }
   }
@@ -297,29 +273,6 @@ export class ApplicationForm implements OnInit {
    * It validates the form and then delegates the save logic to the appropriate
    * private handler based on whether a new contact needs to be created.
    */
-  // public onSubmit(): void {
-  //   if (this.applicationForm.invalid) {
-  //     this.applicationForm.markAllAsTouched();
-  //     this.notificationService.showWarning('Please fill out all required fields correctly.', 'Invalid Input');
-  //     return;
-  //   }
-
-  //   const formValue = this.applicationForm.getRawValue();
-  //   if (!this.isEditMode || !this.currentApplicationId) { return; }
-
-  //   const contactData = this.applicationForm.get('details.contact')?.value;
-  //   const contactFormHasData = contactData?.first_name && contactData?.last_name;
-  //   const shouldCreateContact = !this.currentContactId && contactFormHasData;
-
-  //   const operation$ = shouldCreateContact
-  //     ? this.handleCreateContactAndUpdates(formValue, contactData)
-  //     : this.handleUpdates(formValue, contactData, contactFormHasData);
-
-  //   operation$.subscribe({
-  //     next: () => this.onSaveSuccess(),
-  //     error: (err: any) => this.onSaveError(err, 'update'), // Korrigierter Kontext
-  //   });
-  // }
   public onSubmit(): void {
     if (this.applicationForm.invalid) {
       this.applicationForm.markAllAsTouched();
@@ -363,6 +316,7 @@ export class ApplicationForm implements OnInit {
       // Wir erstellen das Payload direkt aus den Formulardaten.
       const payload: CreateApplicationPayload = {
         job_title: formValue.job_title,
+        salary_expectation: formValue.salary_expectation || null,
         company_id: formValue.company_id,
         status: formValue.status,
         applied_on: formValue.applied_on || null,
@@ -524,6 +478,7 @@ export class ApplicationForm implements OnInit {
   ): CreateApplicationPayload {
     return {
       job_title: formValue.job_title!,
+      salary_expectation: formValue.salary_expectation || null,
       company_id: formValue.company_id!,
       contact_id: contactId,
       status: formValue.status!,

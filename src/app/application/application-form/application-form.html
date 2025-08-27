@@ -28,6 +28,14 @@
           <input id="job_title" type="text" formControlName="job_title" />
         </div>
 
+        <!-- Gehaltsvorstellung -->
+        <div class="form-group">
+          <label for="salary_expectation">
+            Gehaltsvorstellung
+          </label>
+          <input id="salary_expectation" type="text" formControlName="salary_expectation" />
+        </div>
+
         <!-- Firmen-Dropdown nur im Erstellmodus anzeigen -->
         @if(!isEditMode) {
         <div class="form-group">
