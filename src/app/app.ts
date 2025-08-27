@@ -106,7 +106,7 @@ export class App implements OnInit, OnDestroy {
     this.apiService.getCompanies().subscribe({
       next: (data) => {
         this.companies = data;
-        console.log('Companies successfully loaded:', this.companies);
+        // console.log('Companies successfully loaded:', this.companies);
       },
       error: (err) => {
         console.error('Error loading companies:', err);

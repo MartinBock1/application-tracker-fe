@@ -1,7 +1,8 @@
 {
   "/api": {
-    "target": "https://server-tracker.martin-bock.info/",
+    "target": "https://server-tracker.martin-bock.info",
     "secure": false,
+    "changeOrigin": true,
     "logLevel": "debug" 
   }
 }
