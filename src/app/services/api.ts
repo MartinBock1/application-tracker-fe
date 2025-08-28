@@ -44,8 +44,8 @@ export class Api {
   private http = inject(HttpClient);
 
   /** Base URL for all API endpoints */
-  private readonly apiUrl = '/api';  // Use relative URL for development
-  // private readonly apiUrl = 'https://server-tracker.martin-bock.info/api';  // Use absolute URL for production
+  // private readonly apiUrl = '/api';  // Use relative URL for development
+  private readonly apiUrl = 'https://server-tracker.martin-bock.info/api';  // Use absolute URL for production
 
   // --- AUTHENTICATION METHODS ---
   /** 
