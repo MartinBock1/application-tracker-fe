@@ -43,3 +43,6 @@ Thumbs.db
 
 # TypeDoc generated output
 /documentation
+
+# Copilot Instructions
+/.github
